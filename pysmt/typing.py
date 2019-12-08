@@ -92,6 +92,16 @@ class PySMTType(object):
     def is_function_type(self):
         return False
 
+    def is_fxp_type(self, tbw=None, fbw=None):
+        #pylint: disable=unused-argument
+        return False
+
+    def is_fxp_om_type(self):
+        return False
+
+    def is_fxp_rm_type(self):
+        return False
+
     def is_custom_type(self):
         return self.custom_type
 
@@ -374,6 +384,116 @@ class PartialType(object):
     def __call__(self, *args):
         return self.definition(*args)
 
+class _FXPType(PySMTType):
+    """Internal class to represent a FixedPoint type.
+
+    This class should not be instantiated directly, but the factory
+    method BVType should be used instead.
+    """
+
+    _instances = {}
+
+    def __init__(self, sign, total_width, frac_width):
+        # not sure what `decl` does
+        decl = _TypeDecl("BV{%d}" % total_width, 0)
+        PySMTType.__init__(self, decl=decl, args=None)
+        self._sign = sign
+        self._total_width = total_width
+        self._frac_width = frac_width
+
+    @property
+    def total_width(self):
+        return self._total_width
+
+    @property
+    def frac_width(self):
+        return self._frac_width
+
+    @property
+    def int_width(self):
+        return self.total_width - self.frac_width
+
+    @property
+    def sign(self):
+        return self._sign
+
+    def is_fxp_type(self):
+        return True
+
+    def is_ufxp_type(self):
+        return (not self.sign)
+
+    def is_sfxp_type(self):
+        return self.sign
+
+    def as_smtlib(self, funstyle=True):
+        if funstyle:
+            return "() (_ BitVec %d)" % self.total_width
+        else:
+            return "(_ BitVec %d)" % self.total_width
+
+    def __eq__(self, other):
+        # skip PySMTType equality check
+        #if PySMTType.__eq__(self, other):
+        #    return True
+        if other is not None and other.is_fxp_type():
+            return self.sign == other.sign and
+                self.total_width = other.total_width and
+                self.frac_width = other.frac_width
+        return False
+
+    def __hash__(self):
+        return hash(self.total_width) ^ hash(self.frac_width) ^ hash(sign)
+
+# EOC _FXPType
+
+class _FXPOMType(PySMTType):
+    """Internal class to represent a FixedPoint overflow mode type.
+
+    This class should not be instantiated directly, but the factory
+    method BVType should be used instead.
+    """
+
+    _instances = {}
+
+    def __init__(self):
+        decl = _TypeDecl("FXPOverflowMode")
+        PySMTType.__init__(self, decl=decl, args=None)
+
+    def is_fxp_om_type(self):
+        True
+
+    def as_smtlib(self, funstyle=True):
+        assert False, "not implemented"
+
+    def __hash__(self):
+        return hash(self.as_smtlib())
+
+# EOC _FXPOMType
+
+class _FXPRMType(PySMTType):
+    """Internal class to represent a FixedPoint rounding mode type.
+
+    This class should not be instantiated directly, but the factory
+    method BVType should be used instead.
+    """
+
+    _instances = {}
+
+    def __init__(self):
+        decl = _TypeDecl("FXPRoundingMode")
+        PySMTType.__init__(self, decl=decl, args=None)
+
+    def is_fxp_rm_type(self):
+        True
+
+    def as_smtlib(self, funstyle=True):
+        assert False, "not implemented"
+
+    def __hash__(self):
+        return hash(self.as_smtlib())
+
+# EOC _FXPRMType
 
 #
 # Singletons for the basic types
@@ -383,6 +503,12 @@ REAL = _RealType()
 INT =  _IntType()
 STRING = _StringType()
 PYSMT_TYPES = frozenset([BOOL, REAL, INT])
+
+#
+# Singletons for the FixedPoint overflow/rounding mode types
+#
+FXP_OM = _FXPOMType()
+FXP_RM = _FXPRMType()
 
 # Helper Constants
 BV1, BV8, BV16, BV32, BV64, BV128 = [_BVType(i) for i in [1, 8, 16, 32, 64, 128]]
@@ -397,6 +523,9 @@ class TypeManager(object):
         self._array_types = {}
         self._custom_types = {}
         self._custom_types_decl = {}
+        self._fxp_types = {}
+        self._fxp_om_type = None
+        self._fxp_rm_type = None
         self._bool = None
         self._real = None
         self._int = None
@@ -414,6 +543,8 @@ class TypeManager(object):
         self._real = REAL
         self._int = INT
         self._string = STRING
+        self._fxp_om_type = FXPOM
+        self._fxp_rm_type = FXPRM
 
     def BOOL(self):
         return self._bool
@@ -440,6 +571,26 @@ class TypeManager(object):
             ty = _BVType(width=width)
             self._bv_types[width] = ty
         return ty
+
+    def SFXPType(self, sign=True, total_width=32, frac_width=16):
+        """Returns the singleton associated to the FixedPoint type for
+        the given widths.
+
+        This function takes care of building and registering the type
+        whenever needed. To see the functions provided by the type look at
+        _FXPType.
+        """
+        try:
+            ty = self._fxp_types[(sign, total_width, frac_width)]
+        except KeyError:
+            ty = _FXPType(sign total_width, frac_width)
+            self._fxp_types[(sign, total_width, frac_width)]
+
+    def FXPOMType(self):
+        return self._fxp_om_type
+
+    def FXPRMType(self):
+        return self._fxp_rm_type
 
     def FunctionType(self, return_type, param_types):
         """Returns the singleton of the Function type with the given arguments.
@@ -529,10 +680,13 @@ class TypeManager(object):
             ty = stack.pop()
             if ty.arity == 0:
                 if (ty.is_bool_type() or ty.is_int_type() or
-                    ty.is_real_type() or ty.is_string_type()):
+                    ty.is_real_type() or ty.is_string_type() or
+                    ty.is_fxp_om_type() or ty.is_fxp_rm_type()):
                     myty = ty
                 elif ty.is_bv_type():
                     myty = self.BVType(ty.width)
+                elif ty.is_fxp_type():
+                    myty = (SFXPType if ty.sign else UFXPType)(ty.total_width, ty.frac_width)
                 else:
                     myty = self.Type(ty.basename, arity=0)
                 typemap[ty] = myty
@@ -588,6 +742,16 @@ def ArrayType(index_type, elem_type):
     """Returns the Array type with the given arguments."""
     mgr = pysmt.environment.get_env().type_manager
     return mgr.ArrayType(index_type=index_type, elem_type=elem_type)
+
+def UFXPType(total_width=32, frac_width=16):
+    """Returns the Unsigned FixedPoint type with the given arguments."""
+    mgr = pysmt.environment.get_env().type_manager
+    return mgr.FXPType(False, total_width, frac_width)
+
+def SFXPType(total_width=32, frac_width=16):
+    """Returns the Signed FixedPoint type with the given arguments."""
+    mgr = pysmt.environment.get_env().type_manager
+    return mgr.FXPType(True, total_width, frac_width)
 
 def Type(name, arity=0):
     """Returns the Type Declaration with the given name (sort declaration)."""

@@ -25,7 +25,7 @@ from itertools import chain
 from six.moves import xrange
 
 
-ALL_TYPES = list(xrange(0,66))
+ALL_TYPES = list(xrange(0,84))
 
 (
 FORALL, EXISTS, AND, OR, NOT, IMPLIES, IFF, # Boolean Logic (0-6)
@@ -79,6 +79,17 @@ DIV,                                        # Arithmetic Division (62)
 POW,                                        # Arithmetic Power (63)
 ALGEBRAIC_CONSTANT,                         # Algebraic Number (64)
 BV_TONATURAL,                               # BV to Natural Conversion (65)
+#
+# FIXED-POINT
+#
+UFXP_CONSTANT,                              # Unsigned fixed-point constant (66)
+UFXP_LT, UFXP_LE,                           # Unsigned fixed-point relations (67-68)
+UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV      # Unsigned fixed-point arithmetic (69-72)
+SFXP_CONSTANT,                              # Signed fixed-point constant (73)
+SFXP_LT, SFXP_LE,                           # Signed fixed-point relations (74-75)
+SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV      # Signed fixed-point arithmetic (76-79)
+ST, WP,                                     # Overflow mode constants
+RU, RD,                                     # Rounding mode constants
 ) = ALL_TYPES
 
 QUANTIFIERS = frozenset([FORALL, EXISTS])
@@ -88,7 +99,9 @@ BOOL_CONNECTIVES = frozenset([AND, OR, NOT, IMPLIES, IFF])
 BOOL_OPERATORS = frozenset(QUANTIFIERS | BOOL_CONNECTIVES)
 
 CONSTANTS = frozenset([BOOL_CONSTANT, REAL_CONSTANT, INT_CONSTANT,
-                       BV_CONSTANT, STR_CONSTANT, ALGEBRAIC_CONSTANT])
+                       BV_CONSTANT, STR_CONSTANT, ALGEBRAIC_CONSTANT,
+                       UFXP_CONSTANT, SFXP_CONSTANT, ST, WP, RU, RD])
+
 
 # Relations are predicates on theory atoms.
 # Relations have boolean type. They are a subset of the operators for a theory
@@ -98,7 +111,9 @@ IRA_RELATIONS = frozenset([LE, LT])
 
 STR_RELATIONS = frozenset([STR_CONTAINS, STR_PREFIXOF, STR_SUFFIXOF])
 
-RELATIONS = frozenset((EQUALS,)) | BV_RELATIONS | IRA_RELATIONS | STR_RELATIONS
+FXP_RELATIONS = frozenset([UFXP_LT, UFXP_LE, SFXP_LT, SFXP_LE])
+
+RELATIONS = frozenset((EQUALS,)) | BV_RELATIONS | IRA_RELATIONS | STR_RELATIONS | FXP_RELATIONS
 
 # Operators are functions that return a Theory object
 BV_OPERATORS = frozenset([BV_NOT, BV_AND, BV_OR, BV_XOR,
@@ -114,7 +129,11 @@ IRA_OPERATORS = frozenset([PLUS, MINUS, TIMES, TOREAL, DIV, POW, BV_TONATURAL])
 
 ARRAY_OPERATORS = frozenset([ARRAY_SELECT, ARRAY_STORE, ARRAY_VALUE])
 
-THEORY_OPERATORS = IRA_OPERATORS | BV_OPERATORS | ARRAY_OPERATORS | STR_OPERATORS
+FXP_OPERATORS = frozenset([UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,
+                           SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,
+                           ST, WP, RU, RD])
+
+THEORY_OPERATORS = IRA_OPERATORS | BV_OPERATORS | ARRAY_OPERATORS | STR_OPERATORS | FXP_OPERATORS
 
 CUSTOM_NODE_TYPES = []
 
@@ -222,5 +241,23 @@ __OP_STR__ = {
     ARRAY_VALUE : "ARRAY_VALUE",
     DIV: "DIV",
     POW: "POW",
-    ALGEBRAIC_CONSTANT: "ALGEBRAIC_CONSTANT",
+    ALGEBRAIC_CONSTANT : "ALGEBRAIC_CONSTANT",
+    UFXP_CONSTANT : "UFXP_CONSTANT",
+    UFXP_LT : "UFXP_LT",
+    UFXP_LE : "UFXP_LE",
+    UFXP_ADD : "UFXP_ADD",
+    UFXP_SUB : "UFXP_SUB",
+    UFXP_MUL : "UFXP_MUL",
+    UFXP_DIV : "UFXP_DIV",
+    SFXP_CONSTANT : "SFXP_CONSTANT",
+    SFXP_LT : "SFXP_LT",
+    SFXP_LE : "SFXP_LE",
+    SFXP_ADD : "SFXP_ADD",
+    SFXP_SUB : "SFXP_SUB",
+    SFXP_MUL : "SFXP_MUL",
+    SFXP_DIV : "SFXP_DIV",
+    ST : "ST",
+    WP : "WP",
+    RU : "RU",
+    RD : "RD",
 }
