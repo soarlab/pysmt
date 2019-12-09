@@ -25,7 +25,7 @@ reasoning about the type of formulae.
 import pysmt.walkers as walkers
 import pysmt.operators as op
 
-from pysmt.typing import BOOL, REAL, INT, BVType, ArrayType, STRING
+from pysmt.typing import BOOL, REAL, INT, BVType, ArrayType, STRING, UFXPType, SFXPType
 from pysmt.exceptions import PysmtTypeError
 
 
@@ -92,6 +92,21 @@ class SimpleTypeChecker(walkers.DagWalker):
                 return None
         return target_bv_type
 
+    @walkers.handles(op.UFXP_ADD, op.UFXP_SUB, op.UFXP_MUL, op.UFXP_DIV)
+    @walkers.handles(op.SFXP_ADD, op.SFXP_SUB, op.SFXP_MUL, op.SFXP_DIV)
+    def walk_ufxp_to_ufxp(self, formula, args, **kwargs):
+        sign = formula.sign()
+        if sign:
+            target_fxp_type = SFXPType(formula.total_width(),
+                                       formula.frac_width())
+        else:
+            target_fxp_type = UFXPType(formula.total_width(),
+                                       formula.frac_width())
+        for a in args:
+            if not a == target_ufxp_type:
+                return None
+        return target_fxp_type
+    
     @walkers.handles(op.STR_CONCAT, op.STR_REPLACE)
     def walk_str_to_str(self, formula, args, **kwargs):
         #pylint: disable=unused-argument
@@ -125,6 +140,17 @@ class SimpleTypeChecker(walkers.DagWalker):
         width = args[0].width
         for a in args[1:]:
             if (not a.is_bv_type()) or width != a.width:
+                return None
+        return BOOL
+
+    @walkers.handles(op.UFXP_LT, op.UFXP_LE, op.SFXP_LT, op.SFXP_LE)
+    def walk_fxp_to_bool(self, formula, args, **kwargs):
+        s = args[0].sign
+        tw = args[0].total_width
+        fw = args[0].frac_width
+        for a in args[1:]:
+            if ((not a.is_fxp_type()) or s != a.sign or
+                tw != a.total_width or fw != a.frac_width):
                 return None
         return BOOL
 
@@ -191,6 +217,8 @@ class SimpleTypeChecker(walkers.DagWalker):
                                  % str(formula))
         elif args[0].is_bv_type():
             return self.walk_bv_to_bool(formula, args)
+        elif args[0].is_fxp_type():
+            return self.walk_fxp_to_bool(formula, args)
         return self.walk_type_to_type(formula, args, args[0], BOOL)
 
     @walkers.handles(op.LE, op.LT)
@@ -241,6 +269,18 @@ class SimpleTypeChecker(walkers.DagWalker):
         assert formula is not None
         assert len(args) == 0
         return BVType(formula.bv_width())
+
+    @walkers.handles(op.UFXP_CONSTANT, op.SFXP_CONSTANT)
+    def walk_identity_fxp(self, formula, args, **kwargs):
+        assert formula is not None
+        assert len(args) == 0
+        sign = formula.sign()
+        if sign:
+            cons = SFXPType
+        else:
+            cons = UFXPType
+        return cons(formula.total_width(),
+                    formula.frac_width())
 
     def walk_symbol(self, formula, args, **kwargs):
         assert formula is not None

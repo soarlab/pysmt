@@ -316,6 +316,9 @@ def Plus(*args):
     return get_env().formula_manager.Plus(*args)
 
 
+def UFXPAdd(om, left, right):
+    return get_env().formula_manager.UFXPAdd(om, left, right);
+
 def ToReal(formula):
     """Explicit cast of a term into a Real term."""
     return get_env().formula_manager.ToReal(formula)
