@@ -44,14 +44,22 @@ from pysmt.operators import (FORALL, EXISTS, AND, OR, NOT, IMPLIES, IFF,
                              STR_TO_INT, INT_TO_STR,
                              STR_CHARAT,
                              ARRAY_SELECT, ARRAY_STORE, ARRAY_VALUE,
-                             ALGEBRAIC_CONSTANT)
+                             ALGEBRAIC_CONSTANT,
+                             UFXP_CONSTANT,
+                             UFXP_LT, UFXP_LE,
+                             UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,
+                             SFXP_CONSTANT,
+                             SFXP_LT, SFXP_LE,
+                             SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,
+                             )
 
 from pysmt.operators import  (BOOL_OPERATORS, THEORY_OPERATORS,
                               BV_OPERATORS, IRA_OPERATORS, ARRAY_OPERATORS,
                               STR_OPERATORS,
+                              FXP_OPERATORS,
                               RELATIONS, CONSTANTS)
 
-from pysmt.typing import BOOL, REAL, INT, BVType, STRING
+from pysmt.typing import BOOL, REAL, INT, BVType, STRING, UFXPType, SFXPType
 from pysmt.decorators import deprecated, assert_infix_enabled
 from pysmt.utils import twos_complement
 from pysmt.constants import (Fraction, is_python_integer,

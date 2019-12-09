@@ -1046,6 +1046,95 @@ class FormulaManager(object):
                                 args=tuple(),
                                 payload=val)
 
+    # FixedPoint functions
+    def UFXP(self, bv):
+        return self.create_node(node_type=op.UFXP_CONSTANT,
+                                args=(bv,))
+
+    def SFXP(self, bv):
+        return self.create_node(node_type=op.SFXP_CONSTANT,
+                                args=(bv,))
+
+    def UFXPLT(self, left, right):
+        """Returns the formula left < right."""
+        return self.create_node(node_type=op.UFXP_LT,
+                                args=(left, right))
+
+    def SFXPLT(self, left, right):
+        """Returns the formula left < right."""
+        return self.create_node(node_type=op.SFXP_LT,
+                                args=(left, right))
+
+    def UFXPLE(self, left, right):
+        """Returns the formula left <= right."""
+        return self.create_node(node_type=op.UFXP_LE,
+                                args=(left, right))
+
+    def SFXPLE(self, left, right):
+        """Returns the formula left <= right."""
+        return self.create_node(node_type=op.SFXP_LE,
+                                args=(left, right))
+
+    def UFXPGT(self, left, right):
+        """Returns the formula right < left."""
+        return self.create_node(node_type=op.UFXP_LT,
+                                args=(right, left))
+
+    def SFXPGT(self, left, right):
+        """Returns the formula right < left."""
+        return self.create_node(node_type=op.SFXP_LT,
+                                args=(right, left))
+
+    def UFXPGE(self, left, right):
+        """Returns the formula right <= left."""
+        return self.create_node(node_type=op.UFXP_LE,
+                                args=(right, left))
+
+    def SFXPGE(self, left, right):
+        """Returns the formula right <= left."""
+        return self.create_node(node_type=op.SFXP_LE,
+                                args=(right, left))
+
+    def UFXPAdd(self, om, left, right):
+        """Returns the sum of two unsigned fixed-points."""
+        return self.create_node(node_type=op.UFXP_ADD,
+                                args=(om, left, right))
+
+    def SFXPAdd(self, om, left, right):
+        """Returns the addition of two signed fixed-points."""
+        return self.create_node(node_type=op.SFXP_ADD,
+                                args=(om, left, right))
+
+    def UFXPSub(self, om, left, right):
+        """Returns the addition of two unsigned fixed-points."""
+        return self.create_node(node_type=op.UFXP_SUB,
+                                args=(om, left, right))
+
+    def SFXPSub(self, om, left, right):
+        """Returns the subtraction of two signed fixed-points."""
+        return self.create_node(node_type=op.SFXP_SUB,
+                                args=(om, left, right))
+
+    def UFXPMul(self, om, rm, left, right):
+        """Returns the multiplication of two unsigned fixed-points."""
+        return self.create_node(node_type=op.UFXP_MUL,
+                                args=(om, rm, left, right))
+
+    def SFXPSub(self, om, left, right):
+        """Returns the multiplication of two signed fixed-points."""
+        return self.create_node(node_type=op.SFXP_MUL,
+                                args=(om, rm, left, right))
+
+    def UFXPDiv(self, om, rm, left, right):
+        """Returns the division of two unsigned fixed-points."""
+        return self.create_node(node_type=op.UFXP_DIV,
+                                args=(om, rm, left, right))
+
+    def SFXPDiv(self, om, left, right):
+        """Returns the division of two signed fixed-points."""
+        return self.create_node(node_type=op.SFXP_DIV,
+                                args=(om, rm, left, right))
+
     #
     # Helper functions
     #
