@@ -92,21 +92,27 @@ class SimpleTypeChecker(walkers.DagWalker):
                 return None
         return target_bv_type
 
-    @walkers.handles(op.UFXP_ADD, op.UFXP_SUB, op.UFXP_MUL, op.UFXP_DIV)
-    @walkers.handles(op.SFXP_ADD, op.SFXP_SUB, op.SFXP_MUL, op.SFXP_DIV)
-    def walk_ufxp_to_ufxp(self, formula, args, **kwargs):
-        sign = formula.sign()
-        if sign:
-            target_fxp_type = SFXPType(formula.total_width(),
-                                       formula.frac_width())
-        else:
-            target_fxp_type = UFXPType(formula.total_width(),
-                                       formula.frac_width())
+    def walk_fxp_to_fxp(self, formula, args, **kwargs):
         for a in args:
-            if not a == target_ufxp_type:
+            if not a == args[0]:
                 return None
-        return target_fxp_type
+        return args[0]
     
+    @walkers.handles(op.UFXP_ADD, op.UFXP_SUB)
+    @walkers.handles(op.SFXP_ADD, op.SFXP_SUB)
+    def walk_fxpas_to_fxpas(self, formula, args, **kwargs):
+        print(type(formula))
+        if not args[0].is_fxp_om_type():
+            return None
+        return self.walk_fxp_to_fxp(formula, args[1:], kwargs)
+
+    @walkers.handles(op.UFXP_MUL, op.UFXP_DIV)
+    @walkers.handles(op.SFXP_MUL, op.SFXP_DIV)
+    def walk_fxpmd_to_fxpmd(self, formula, args, **kwargs):
+        if not args[0].is_fxp_om_type() or not args[1].is_fxp_rm_type():
+            return None
+        return self.walk_fxp_to_fxp(formula, args[2:], kwargs)
+
     @walkers.handles(op.STR_CONCAT, op.STR_REPLACE)
     def walk_str_to_str(self, formula, args, **kwargs):
         #pylint: disable=unused-argument
