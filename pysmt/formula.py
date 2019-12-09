@@ -1130,7 +1130,7 @@ class FormulaManager(object):
         return self.create_node(node_type=op.UFXP_DIV,
                                 args=(om, rm, left, right))
 
-    def SFXPDiv(self, om, left, right):
+    def SFXPDiv(self, om, rm, left, right):
         """Returns the division of two signed fixed-points."""
         return self.create_node(node_type=op.SFXP_DIV,
                                 args=(om, rm, left, right))

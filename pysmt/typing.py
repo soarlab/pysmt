@@ -388,7 +388,7 @@ class _FXPType(PySMTType):
     """Internal class to represent a FixedPoint type.
 
     This class should not be instantiated directly, but the factory
-    method BVType should be used instead.
+    method (U|S)FXPType should be used instead.
     """
 
     _instances = {}
@@ -443,7 +443,7 @@ class _FXPType(PySMTType):
         return False
 
     def __hash__(self):
-        return hash(self.total_width) ^ hash(self.frac_width) ^ hash(sign)
+        return hash(self.total_width) ^ hash(self.frac_width) ^ hash(self.sign)
 
 # EOC _FXPType
 
@@ -572,7 +572,7 @@ class TypeManager(object):
             self._bv_types[width] = ty
         return ty
 
-    def SFXPType(self, sign=True, total_width=32, frac_width=16):
+    def FXPType(self, sign=True, total_width=32, frac_width=16):
         """Returns the singleton associated to the FixedPoint type for
         the given widths.
 
@@ -584,7 +584,8 @@ class TypeManager(object):
             ty = self._fxp_types[(sign, total_width, frac_width)]
         except KeyError:
             ty = _FXPType(sign, total_width, frac_width)
-            self._fxp_types[(sign, total_width, frac_width)]
+            self._fxp_types[(sign, total_width, frac_width)] = ty
+        return ty
 
     def FXPOMType(self):
         return self._fxp_om_type
