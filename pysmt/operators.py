@@ -84,10 +84,10 @@ BV_TONATURAL,                               # BV to Natural Conversion (65)
 #
 UFXP_CONSTANT,                              # Unsigned fixed-point constant (66)
 UFXP_LT, UFXP_LE,                           # Unsigned fixed-point relations (67-68)
-UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV      # Unsigned fixed-point arithmetic (69-72)
+UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,     # Unsigned fixed-point arithmetic (69-72)
 SFXP_CONSTANT,                              # Signed fixed-point constant (73)
 SFXP_LT, SFXP_LE,                           # Signed fixed-point relations (74-75)
-SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV      # Signed fixed-point arithmetic (76-79)
+SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,     # Signed fixed-point arithmetic (76-79)
 ST, WP,                                     # Overflow mode constants
 RU, RD,                                     # Rounding mode constants
 ) = ALL_TYPES
@@ -130,8 +130,7 @@ IRA_OPERATORS = frozenset([PLUS, MINUS, TIMES, TOREAL, DIV, POW, BV_TONATURAL])
 ARRAY_OPERATORS = frozenset([ARRAY_SELECT, ARRAY_STORE, ARRAY_VALUE])
 
 FXP_OPERATORS = frozenset([UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,
-                           SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,
-                           ST, WP, RU, RD])
+                           SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV])
 
 THEORY_OPERATORS = IRA_OPERATORS | BV_OPERATORS | ARRAY_OPERATORS | STR_OPERATORS | FXP_OPERATORS
 

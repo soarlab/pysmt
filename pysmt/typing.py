@@ -437,9 +437,9 @@ class _FXPType(PySMTType):
         #if PySMTType.__eq__(self, other):
         #    return True
         if other is not None and other.is_fxp_type():
-            return self.sign == other.sign and
-                self.total_width = other.total_width and
-                self.frac_width = other.frac_width
+            return (self.sign == other.sign and
+                    self.total_width == other.total_width and
+                    self.frac_width == other.frac_width)
         return False
 
     def __hash__(self):
@@ -457,7 +457,7 @@ class _FXPOMType(PySMTType):
     _instances = {}
 
     def __init__(self):
-        decl = _TypeDecl("FXPOverflowMode")
+        decl = _TypeDecl("FXPOverflowMode", arity=0)
         PySMTType.__init__(self, decl=decl, args=None)
 
     def is_fxp_om_type(self):
@@ -481,7 +481,7 @@ class _FXPRMType(PySMTType):
     _instances = {}
 
     def __init__(self):
-        decl = _TypeDecl("FXPRoundingMode")
+        decl = _TypeDecl("FXPRoundingMode", arity=0)
         PySMTType.__init__(self, decl=decl, args=None)
 
     def is_fxp_rm_type(self):
@@ -543,8 +543,8 @@ class TypeManager(object):
         self._real = REAL
         self._int = INT
         self._string = STRING
-        self._fxp_om_type = FXPOM
-        self._fxp_rm_type = FXPRM
+        self._fxp_om_type = FXP_OM
+        self._fxp_rm_type = FXP_RM
 
     def BOOL(self):
         return self._bool
@@ -583,7 +583,7 @@ class TypeManager(object):
         try:
             ty = self._fxp_types[(sign, total_width, frac_width)]
         except KeyError:
-            ty = _FXPType(sign total_width, frac_width)
+            ty = _FXPType(sign, total_width, frac_width)
             self._fxp_types[(sign, total_width, frac_width)]
 
     def FXPOMType(self):
