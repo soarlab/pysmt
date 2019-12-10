@@ -395,7 +395,8 @@ class _FXPType(PySMTType):
 
     def __init__(self, sign, total_width, frac_width):
         # not sure what `decl` does
-        decl = _TypeDecl("BV{%d}" % total_width, 0)
+        decl = _TypeDecl("{0}FXP_{1}_{2}".format('S' if sign else 'U',
+            total_width, frac_width), 0)
         PySMTType.__init__(self, decl=decl, args=None)
         self._sign = sign
         self._total_width = total_width
@@ -464,7 +465,8 @@ class _FXPOMType(PySMTType):
         return True
 
     def as_smtlib(self, funstyle=True):
-        assert False, "not implemented"
+        #assert False, "not implemented"
+        pass
 
     def __hash__(self):
         return hash(self.as_smtlib())
@@ -488,7 +490,8 @@ class _FXPRMType(PySMTType):
         return True
 
     def as_smtlib(self, funstyle=True):
-        assert False, "not implemented"
+        #assert False, "not implemented"
+        pass
 
     def __hash__(self):
         return hash(self.as_smtlib())

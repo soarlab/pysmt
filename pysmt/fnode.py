@@ -59,6 +59,8 @@ from pysmt.operators import  (BOOL_OPERATORS, THEORY_OPERATORS,
                               FXP_OPERATORS,
                               RELATIONS, CONSTANTS)
 
+from pysmt.operators import op_to_str
+
 from pysmt.typing import BOOL, REAL, INT, BVType, STRING, UFXPType, SFXPType
 from pysmt.decorators import deprecated, assert_infix_enabled
 from pysmt.utils import twos_complement
@@ -475,6 +477,12 @@ class FNode(object):
     def is_array_value(self):
         """Test whether the node is an array value operator."""
         return self.node_type() == ARRAY_VALUE
+
+    def is_unsigned_fxp_op(self):
+        return op_to_str(self.node_type()).startswith('U')
+
+    def is_signed_fxp_op(self):
+        return op_to_str(self.node_type()).startswith('S')
 
     def bv_width(self):
         """Return the BV width of the formula."""
