@@ -101,17 +101,16 @@ class SimpleTypeChecker(walkers.DagWalker):
     @walkers.handles(op.UFXP_ADD, op.UFXP_SUB)
     @walkers.handles(op.SFXP_ADD, op.SFXP_SUB)
     def walk_fxpas_to_fxpas(self, formula, args, **kwargs):
-        print(type(formula))
         if not args[0].is_fxp_om_type():
             return None
-        return self.walk_fxp_to_fxp(formula, args[1:], kwargs)
+        return self.walk_fxp_to_fxp(formula, args[1:], **kwargs)
 
     @walkers.handles(op.UFXP_MUL, op.UFXP_DIV)
     @walkers.handles(op.SFXP_MUL, op.SFXP_DIV)
     def walk_fxpmd_to_fxpmd(self, formula, args, **kwargs):
         if not args[0].is_fxp_om_type() or not args[1].is_fxp_rm_type():
             return None
-        return self.walk_fxp_to_fxp(formula, args[2:], kwargs)
+        return self.walk_fxp_to_fxp(formula, args[2:], **kwargs)
 
     @walkers.handles(op.STR_CONCAT, op.STR_REPLACE)
     def walk_str_to_str(self, formula, args, **kwargs):

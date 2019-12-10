@@ -461,7 +461,7 @@ class _FXPOMType(PySMTType):
         PySMTType.__init__(self, decl=decl, args=None)
 
     def is_fxp_om_type(self):
-        True
+        return True
 
     def as_smtlib(self, funstyle=True):
         assert False, "not implemented"
