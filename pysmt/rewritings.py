@@ -821,7 +821,44 @@ class DisjointSet(object):
 
 # EOC DisjointSet
 
+class FXPToBV(DagWalker):
 
+    def __init__(self, environment=None):
+        DagWalker.__init__(self, environment)
+
+        self.mgr = self.env.formula_manager
+        self.symbol_map = dict()
+
+    def convert(self, formula):
+        return self.walk(formula)
+
+    def walk_ufxp_add(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        om = args[0]
+        left = self.walk(args[1])
+        right = self.walk(args[2])
+        return self.mgr.BVAdd(left, right)
+
+    def walk_ufxp_sub(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        om = args[0]
+        left = self.walk(args[1])
+        right = self.walk(args[2])
+        return self.mgr.BVSub(left, right)
+
+    def walk_symbol(self, formula, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        print (formula, ty)
+        if ty.is_fxp_type():
+            return self.mgr.Symbol(formula.symbol_name(), types.BVType(ty.total_width))
+        else:
+            return formula
+
+def get_fp_bv_converter(environment=None):
+    fp_bv_converter = FXPToBV(environment)
+    return fp_bv_converter
 
 def nnf(formula, environment=None):
     """Converts the given formula in NNF"""
