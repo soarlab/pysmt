@@ -834,24 +834,40 @@ class FXPToBV(DagWalker):
     def convert(self, formula):
         return self.walk(formula)
 
+    def bv_extend(self, bv, length, sign):
+        extension = self.mgr.BV(2**length - 1, length) if sign else self.mgr.BV(0, length)
+
+        return self.mgr.BVConcat(extension, bv)
+
     def walk_ufxp_add(self, formula, args, **kwargs):
         print "hey1"
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
-        om = (args[0])
-        left = (args[1])
-        right = (args[2])
-        return self.mgr.Ite(self.mgr.Equals(om, self.st_bv),
-                self.mgr.BVAdd(left, right),
-                self.mgr.BVAdd(right, left))
+        extended_width = total_width * 2
+        max_value = self.mgr.BV(2**total_width - 1, total_width)
+        extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
+        om = args[0]
+        left = args[1]
+        right = args[2]
+        extended_sum = self.mgr.BVAdd(
+                self.bv_extend(left, total_width, False),
+                self.bv_extend(right, total_width, False))
+        wrapped_sum = self.mgr.BVAdd(left, right)
+        saturated_sum = self.mgr.Ite(
+                self.mgr.BVUGT(extended_sum, extended_max_value),
+                max_value,
+                wrapped_sum)
+        return self.mgr.Ite(self.mgr.Equals(om, self.wp_bv),
+                wrapped_sum,
+                saturated_sum)
 
     def walk_ufxp_sub(self, formula, args, **kwargs):
         print "hey2"
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
         om = args[0]
-        left = (args[1])
-        right = (args[2])
+        left = args[1]
+        right = args[2]
         return self.mgr.BVSub(left, right)
 
     def walk_symbol(self, formula, **kwargs):

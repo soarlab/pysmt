@@ -32,9 +32,9 @@ zzzzz = UFXPDiv(o, r, x, y)
 
 k = BV(1, 2)
 conv =  get_fp_bv_converter()
-#print conv.convert(zz)
+print conv.convert(zz)
 #print conv.convert(zzz)
 kk = Equals(zzz, zzz)
 #kkk = Equals(k,k)
-print conv.convert(kk)
+#print conv.convert(kk)
 # consts
