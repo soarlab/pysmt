@@ -317,34 +317,37 @@ def Plus(*args):
 
 
 def UFXP(bv):
-    return get_env().formula_manager.UFXP(bv);
+    return get_env().formula_manager.UFXP(bv)
 
 def SFXP(bv):
-    return get_env().formula_manager.SFXP(bv);
+    return get_env().formula_manager.SFXP(bv)
 
 def UFXPAdd(om, left, right):
-    return get_env().formula_manager.UFXPAdd(om, left, right);
+    return get_env().formula_manager.UFXPAdd(om, left, right)
 
 def SFXPAdd(om, left, right):
-    return get_env().formula_manager.SFXPAdd(om, left, right);
+    return get_env().formula_manager.SFXPAdd(om, left, right)
 
 def UFXPSub(om, left, right):
-    return get_env().formula_manager.UFXPSub(om, left, right);
+    return get_env().formula_manager.UFXPSub(om, left, right)
 
 def SFXPSub(om, left, right):
-    return get_env().formula_manager.SFXPSub(om, left, right);
+    return get_env().formula_manager.SFXPSub(om, left, right)
 
 def UFXPMul(om, rm, left, right):
-    return get_env().formula_manager.UFXPMul(om, rm, left, right);
+    return get_env().formula_manager.UFXPMul(om, rm, left, right)
 
 def SFXPMul(om, rm, left, right):
-    return get_env().formula_manager.SFXPMul(om, rm, left, right);
+    return get_env().formula_manager.SFXPMul(om, rm, left, right)
 
 def UFXPDiv(om, rm, left, right):
-    return get_env().formula_manager.UFXPDiv(om, rm, left, right);
+    return get_env().formula_manager.UFXPDiv(om, rm, left, right)
 
 def SFXPDiv(om, rm, left, right):
-    return get_env().formula_manager.SFXPDiv(om, rm, left, right);
+    return get_env().formula_manager.SFXPDiv(om, rm, left, right)
+
+ST = get_env().formula_manager.ST()
+WP = get_env().formula_manager.WP()
 
 def ToReal(formula):
     """Explicit cast of a term into a Real term."""

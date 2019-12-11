@@ -835,10 +835,12 @@ class FXPToBV(DagWalker):
     def walk_ufxp_add(self, formula, args, **kwargs):
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
-        om = args[0]
+        om = self.walk(args[0])
         left = self.walk(args[1])
         right = self.walk(args[2])
-        return self.mgr.BVAdd(left, right)
+        return self.mgr.Ite(self.mgr.Equals(om, self.mgr.BV(1,1)),
+                self.mgr.BVAdd(left, right),
+                self.mgr.BVAdd(right, left))
 
     def walk_ufxp_sub(self, formula, args, **kwargs):
         ty = self.env.stc.get_type(formula)
@@ -852,9 +854,33 @@ class FXPToBV(DagWalker):
         ty = self.env.stc.get_type(formula)
         print (formula, ty)
         if ty.is_fxp_type():
-            return self.mgr.Symbol(formula.symbol_name(), types.BVType(ty.total_width))
+            if formula not in self.symbol_map:
+                self.symbol_map[formula] = \
+                    self.mgr.FreshSymbol(types.BVType(ty.total_width))
+                return self.symbol_map[formula]
         else:
             return formula
+
+    def walk_bv_add(self, formula, args, **kwargs):
+        return formula
+
+    def walk_bv_sub(self, formula, args, **kwargs):
+        return formula
+
+    def walk_st(self, formula, **kwargs):
+        return self.mgr.BV(1, 1)
+
+    def walk_wp(self, formula, **kwargs):
+        return self.mgr.BV(0, 1)
+
+    def walk_bv_constant(self, formula, **kwargs):
+        return formula
+
+    def walk_equals(self, formula, args, **kwargs):
+        return formula
+
+    def walk_ite(self, formula, args, **kwargs):
+        return formula
 
 def get_fp_bv_converter(environment=None):
     fp_bv_converter = FXPToBV(environment)
