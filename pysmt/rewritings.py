@@ -828,35 +828,44 @@ class FXPToBV(DagWalker):
 
         self.mgr = self.env.formula_manager
         self.symbol_map = dict()
+        self.st_bv = self.mgr.BV(0, 2)
+        self.wp_bv = self.mgr.BV(1, 2)
 
     def convert(self, formula):
         return self.walk(formula)
 
     def walk_ufxp_add(self, formula, args, **kwargs):
+        print "hey1"
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
-        om = self.walk(args[0])
-        left = self.walk(args[1])
-        right = self.walk(args[2])
-        return self.mgr.Ite(self.mgr.Equals(om, self.mgr.BV(1,1)),
+        om = (args[0])
+        left = (args[1])
+        right = (args[2])
+        return self.mgr.Ite(self.mgr.Equals(om, self.st_bv),
                 self.mgr.BVAdd(left, right),
                 self.mgr.BVAdd(right, left))
 
     def walk_ufxp_sub(self, formula, args, **kwargs):
+        print "hey2"
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
         om = args[0]
-        left = self.walk(args[1])
-        right = self.walk(args[2])
+        left = (args[1])
+        right = (args[2])
         return self.mgr.BVSub(left, right)
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
-        print (formula, ty)
+        #print (formula, ty)
         if ty.is_fxp_type():
             if formula not in self.symbol_map:
                 self.symbol_map[formula] = \
                     self.mgr.FreshSymbol(types.BVType(ty.total_width))
+                return self.symbol_map[formula]
+        elif ty.is_fxp_om_type() or ty.is_fxp_om_type():
+            if formula not in self.symbol_map:
+                self.symbol_map[formula] = \
+                    self.mgr.FreshSymbol(types.BVType(2))
                 return self.symbol_map[formula]
         else:
             return formula
@@ -868,16 +877,20 @@ class FXPToBV(DagWalker):
         return formula
 
     def walk_st(self, formula, **kwargs):
-        return self.mgr.BV(1, 1)
+        return self.st_bv
 
     def walk_wp(self, formula, **kwargs):
-        return self.mgr.BV(0, 1)
+        return self.wp_bv
 
     def walk_bv_constant(self, formula, **kwargs):
+        print "hey3"
         return formula
 
     def walk_equals(self, formula, args, **kwargs):
-        return formula
+        print "hey"
+        left = args[0]
+        right = args[1]
+        return self.mgr.Equals(left, right)
 
     def walk_ite(self, formula, args, **kwargs):
         return formula
