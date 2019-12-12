@@ -316,11 +316,11 @@ def Plus(*args):
     return get_env().formula_manager.Plus(*args)
 
 
-def UFXP(bv):
-    return get_env().formula_manager.UFXP(bv);
+def UFXP(bv, fp):
+    return get_env().formula_manager.UFXP(bv, fp);
 
-def SFXP(bv):
-    return get_env().formula_manager.SFXP(bv);
+def SFXP(bv, fp):
+    return get_env().formula_manager.SFXP(bv, fp);
 
 def UFXPAdd(om, left, right):
     return get_env().formula_manager.UFXPAdd(om, left, right);

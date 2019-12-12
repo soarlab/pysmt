@@ -120,7 +120,7 @@ class HRPrinter(TreeWalker):
         self.write("(ufxp {} {})".format(formula.constant_value(),
                                          formula.frac_width()))
 
-       def walk_ufxp_constant(self, formula):
+    def walk_ufxp_constant(self, formula):
         self.write("(sfxp {} {})".format(formula.constant_value(),
                                          formula.frac_width()))
 
@@ -141,7 +141,7 @@ class HRPrinter(TreeWalker):
             yield formula.arg(0)
             if i != len(args) - 1:
                 self.write(' ')
-        self.write')'
+        self.write(')')
 
     def walk_ufxp_add(self, formula):
         self.fxp_add(False, 'add', formula)

@@ -283,13 +283,13 @@ class SimpleTypeChecker(walkers.DagWalker):
     def walk_identity_fxp(self, formula, args, **kwargs):
         assert formula is not None
         assert len(args) == 0
-        sign = formula.sign()
+        sign = formula.is_signed_fxp_op()
         if sign:
             cons = SFXPType
         else:
             cons = UFXPType
-        return cons(formula.total_width(),
-                    formula.frac_width())
+        return cons(formula.fxp_total_width(),
+                    formula.fxp_frac_width())
 
     def walk_symbol(self, formula, args, **kwargs):
         assert formula is not None

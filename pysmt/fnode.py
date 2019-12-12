@@ -484,6 +484,20 @@ class FNode(object):
     def is_signed_fxp_op(self):
         return op_to_str(self.node_type()).startswith('S')
 
+    def fxp_total_width(self):
+        try:
+            tw = len(self._content.payload[0])-2
+            return tw
+        except:
+            return self.total_width
+        
+    def fxp_frac_width(self):
+        try:
+            fw = self._content.payload[1]
+            return fw
+        except:
+            return self.frac_width
+            
     def bv_width(self):
         """Return the BV width of the formula."""
         if self.is_bv_constant():
@@ -584,6 +598,8 @@ class FNode(object):
         assert self.is_constant()
         if self.node_type() == BV_CONSTANT:
             return self._content.payload[0]
+        if self.node_type() in (UFXP_CONSTANT, SFXP_CONSTANT):
+            return self.__content.payload[0]
         return self._content.payload
 
     def constant_type(self):
@@ -594,6 +610,10 @@ class FNode(object):
             return REAL
         elif self.node_type() == BOOL_CONSTANT:
             return BOOL
+        elif self.node_type() == UFXP_CONSTANT:
+            return UFXP
+        elif self.node_type() == SFXP_CONSTANT:
+            return SFXP
         elif self.node_type() == STR_CONSTANT:
             return STRING
         else:
