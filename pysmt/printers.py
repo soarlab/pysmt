@@ -138,9 +138,9 @@ class HRPrinter(TreeWalker):
         self.write('({}fxp.{} '.format(s, op))
         args = formula.args()
         for i in range(len(args)):
-            yield formula.arg(0)
-            if i != len(args) - 1:
-                self.write(' ')
+            #yield formula.arg(0)
+            #if i != len(args) - 1:
+                self.walk(args[i])
         self.write(')')
 
     def walk_ufxp_add(self, formula):
@@ -149,35 +149,35 @@ class HRPrinter(TreeWalker):
     def walk_sfxp_add(self, formula):
         self.fxp_add(True, 'add', formula)
 
-    def walk_ufxp_sub(self, formula):
-        self.fxp_sub(False, 'sub', formula)
-        
-    def walk_sfxp_sub(self, formula):
-        self.fxp_sub(True, 'sub', formula)
+    #def walk_ufxp_sub(self, formula):
+    #    self.fxp_sub(False, 'sub', formula)
+    #    
+    #def walk_sfxp_sub(self, formula):
+    #    self.fxp_sub(True, 'sub', formula)
 
-    def walk_ufxp_mul(self, formula):
-        self.fxp_mul(False, 'mul', formula)
-        
-    def walk_sfxp_mul(self, formula):
-        self.fxp_mul(True, 'mul', formula)
+    #def walk_ufxp_mul(self, formula):
+    #    self.fxp_mul(False, 'mul', formula)
+    #    
+    #def walk_sfxp_mul(self, formula):
+    #    self.fxp_mul(True, 'mul', formula)
 
-    def walk_ufxp_div(self, formula):
-        self.fxp_div(False, 'div', formula)
-        
-    def walk_sfxp_div(self, formula):
-        self.fxp_div(True, 'div', formula)
+    #def walk_ufxp_div(self, formula):
+    #    self.fxp_div(False, 'div', formula)
+    #    
+    #def walk_sfxp_div(self, formula):
+    #    self.fxp_div(True, 'div', formula)
 
-    def walk_ufxp_lt(self, formula):
-        self.fxp_div(False, 'lt', formula)
+    #def walk_ufxp_lt(self, formula):
+    #    self.fxp_div(False, 'lt', formula)
 
-    def walk_sfxp_lt(self, formula):
-        self.fxp_div(True, 'lt', formula)
-        
-    def walk_ufxp_le(self, formula):
-        self.fxp_div(False, 'le', formula)
+    #def walk_sfxp_lt(self, formula):
+    #    self.fxp_div(True, 'lt', formula)
+    #    
+    #def walk_ufxp_le(self, formula):
+    #    self.fxp_div(False, 'le', formula)
 
-    def walk_sfxp_le(self, formula):
-        self.fxp_div(True, 'le', formula)
+    #def walk_sfxp_le(self, formula):
+    #    self.fxp_div(True, 'le', formula)
         
     def walk_bv_neg(self, formula):
         self.write("(- ")

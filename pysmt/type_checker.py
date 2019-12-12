@@ -25,7 +25,8 @@ reasoning about the type of formulae.
 import pysmt.walkers as walkers
 import pysmt.operators as op
 
-from pysmt.typing import BOOL, REAL, INT, BVType, ArrayType, STRING, UFXPType, SFXPType
+from pysmt.typing import BOOL, REAL, INT, BVType, ArrayType, STRING, UFXPType, \
+                         SFXPType, FXP_OM, FXP_RM
 from pysmt.exceptions import PysmtTypeError
 
 
@@ -115,6 +116,14 @@ class SimpleTypeChecker(walkers.DagWalker):
         if not args[0].is_fxp_om_type() or not args[1].is_fxp_rm_type():
             return None
         return self.walk_fxp_to_fxp(formula.is_signed_fxp_op(), args[2:])
+
+    @walkers.handles(op.ST, op.WP)
+    def walk_fxp_om_const(self, formula, args, **kwargs):
+        return FXP_OM
+
+    @walkers.handles(op.RU, op.RD)
+    def walk_fxp_rm_const(self, formula, args, **kwargs):
+        return FXP_RM
 
     @walkers.handles(op.STR_CONCAT, op.STR_REPLACE)
     def walk_str_to_str(self, formula, args, **kwargs):

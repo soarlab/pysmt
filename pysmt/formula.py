@@ -1148,6 +1148,12 @@ class FormulaManager(object):
         return self.create_node(node_type=op.SFXP_DIV,
                                 args=(om, rm, left, right))
 
+    def ST(self):
+        return self.create_node(node_type=op.ST, args=())
+
+    def WP(self):
+        return self.create_node(node_type=op.WP, args=())
+
     #
     # Helper functions
     #

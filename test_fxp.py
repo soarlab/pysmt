@@ -6,7 +6,7 @@ from pysmt.typing import UFXPType, SFXPType, FXP_OM, FXP_RM
 
 from pysmt.shortcuts import UFXPAdd, UFXPSub, UFXPMul, UFXPDiv, \
                             SFXPAdd, SFXPSub, SFXPMul, SFXPDiv, \
-                            UFXP, SFXP, BV 
+                            UFXP, SFXP, BV, ST, WP
 
 from pysmt.rewritings import get_fp_bv_converter
 
@@ -26,11 +26,15 @@ r = Symbol('r', FXP_RM)
 #z = UFXPLt(x, y)
 
 zz = UFXPAdd(o, x, y)
-zzz = UFXPSub(o, x, y)
+zzz = UFXPSub(WP, x, zz)
 zzzz = UFXPMul(o, r, x, y)
 zzzzz = UFXPDiv(o, r, x, y)
 
 k = BV(1, 2)
 conv =  get_fp_bv_converter()
 print conv.convert(zz)
+#print conv.convert(zzz)
+kk = Equals(zzz, zzz)
+#kkk = Equals(k,k)
+#print conv.convert(kk)
 # consts
