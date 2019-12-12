@@ -835,23 +835,23 @@ class FXPToBV(DagWalker):
         return self.walk(formula)
 
     def bv_extend(self, bv, length, sign):
-        extension = self.mgr.BV(2**length - 1, length) if sign else self.mgr.BV(0, length)
+        extension = self.mgr.BV(2**length - 1, length) \
+            if sign else self.mgr.BV(0, length)
 
         return self.mgr.BVConcat(extension, bv)
 
     def walk_ufxp_add(self, formula, args, **kwargs):
-        print "hey1"
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
-        extended_width = total_width * 2
+        extended_width = total_width + 1
         max_value = self.mgr.BV(2**total_width - 1, total_width)
         extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
         om = args[0]
         left = args[1]
         right = args[2]
         extended_sum = self.mgr.BVAdd(
-                self.bv_extend(left, total_width, False),
-                self.bv_extend(right, total_width, False))
+                self.bv_extend(left, 1, False),
+                self.bv_extend(right, 1, False))
         wrapped_sum = self.mgr.BVAdd(left, right)
         saturated_sum = self.mgr.Ite(
                 self.mgr.BVUGT(extended_sum, extended_max_value),
@@ -861,18 +861,55 @@ class FXPToBV(DagWalker):
                 wrapped_sum,
                 saturated_sum)
 
+    def convert_sfxp_lop(self, bv_op, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        extended_width = total_width + 1
+        max_value = self.mgr.BV(2**(total_width - 1) - 1, total_width)
+        extended_max_value = self.mgr.BV(2**(total_width - 1) - 1, extended_width)
+        min_value = self.mgr.BV(2**(total_width - 1), total_width)
+        extended_min_value = self.mgr.BV((3 << (total_width - 1)), extended_width)
+        om = args[0]
+        left = args[1]
+        right = args[2]
+        extended_sum = bv_op(
+                self.bv_extend(left, 1, True),
+                self.bv_extend(right, 1, True))
+        wrapped_sum = bv_op(left, right)
+        saturated_sum = self.mgr.Ite(
+                self.mgr.BVSGT(extended_sum, extended_max_value),
+                max_value,
+                self.mgr.Ite(
+                    self.mgr.BVSLT(extended_sum, extended_min_value),
+                    min_value,
+                    wrapped_sum))
+        return self.mgr.Ite(self.mgr.Equals(om, self.wp_bv),
+                wrapped_sum,
+                saturated_sum)
+
+    def walk_sfxp_add(self, formula, args, **kwargs):
+        return convet_sfxp_lop(self.mgr.BVAdd, formula, args, **kwargs)
+
     def walk_ufxp_sub(self, formula, args, **kwargs):
-        print "hey2"
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
         om = args[0]
         left = args[1]
         right = args[2]
-        return self.mgr.BVSub(left, right)
+        wrapped_sub = self.mgr.BVSub(left, right)
+        saturated_sub = self.mgr.Ite(
+                self.mgr.BVUGT(left, right),
+                wrapped_sub,
+                self.mgr.BV(0, total_width))
+        return self.mgr.Ite(self.mgr.Equals(om, self.wp_bv),
+                wrapped_sub,
+                saturated_sub)
+
+    def walk_sfxp_sub(self, formula, args, **kwargs):
+        return convet_sfxp_lop(self.mgr.BVSub, formula, args, **kwargs)
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
-        #print (formula, ty)
         if ty.is_fxp_type():
             if formula not in self.symbol_map:
                 self.symbol_map[formula] = \
@@ -886,30 +923,22 @@ class FXPToBV(DagWalker):
         else:
             return formula
 
-    def walk_bv_add(self, formula, args, **kwargs):
-        return formula
-
-    def walk_bv_sub(self, formula, args, **kwargs):
-        return formula
-
     def walk_st(self, formula, **kwargs):
         return self.st_bv
 
     def walk_wp(self, formula, **kwargs):
         return self.wp_bv
 
-    def walk_bv_constant(self, formula, **kwargs):
-        print "hey3"
-        return formula
-
     def walk_equals(self, formula, args, **kwargs):
-        print "hey"
         left = args[0]
         right = args[1]
         return self.mgr.Equals(left, right)
 
     def walk_ite(self, formula, args, **kwargs):
         return formula
+
+    def walk_not(self, formula, args, **kwargs):
+        return self.mgr.Not(args[0])
 
 def get_fp_bv_converter(environment=None):
     fp_bv_converter = FXPToBV(environment)
