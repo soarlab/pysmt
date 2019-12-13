@@ -486,8 +486,7 @@ class FNode(object):
 
     def fxp_total_width(self):
         try:
-            tw = len(self._content.payload[0])-2
-            return tw
+            return self.arg(1).bv_width()
         except:
             return self.total_width
         

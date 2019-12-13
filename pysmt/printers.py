@@ -117,12 +117,12 @@ class HRPrinter(TreeWalker):
                               formula.bv_width()))
 
     def walk_ufxp_constant(self, formula):
-        self.write("(ufxp {} {})".format(formula.constant_value(),
-                                         formula.frac_width()))
+        self.write("(ufxp {} {})".format(formula.arg(0),
+                                         formula._content.payload[0]))
 
-    def walk_ufxp_constant(self, formula):
-        self.write("(sfxp {} {})".format(formula.constant_value(),
-                                         formula.frac_width()))
+    def walk_sfxp_constant(self, formula):
+        self.write("(sfxp {} {})".format(formula.arg(0),
+                                         formula._content.payload[0]))
 
     def walk_algebraic_constant(self, formula):
         self.write(str(formula.constant_value()))

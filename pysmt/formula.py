@@ -1048,25 +1048,14 @@ class FormulaManager(object):
 
     # FixedPoint functions
     def UFXP(self, bv, fb):
-        if (type(bv) is not str or
-            not bv.startswith("#b") or
-            not all(v in ["0", "1"] for v in bv[2:])):
-            raise PysmtValueError("Expecting binary value as string, got " \
-                                  "%s instead." % value)
         return self.create_node(node_type=op.UFXP_CONSTANT,
-                                args=tuple(),
-                                payload=(bv, fb))
+                                args=(bv,),
+                                payload=(fb,))
 
     def SFXP(self, bv, fb):
-        if (type(bv) is not str or
-            not bv.startswith("#b") or
-            not all(v in ["0", "1"] for v in bv[2:])):
-            raise PysmtValueError("Expecting binary value as string, got " \
-                                  "%s instead." % value)
-
         return self.create_node(node_type=op.SFXP_CONSTANT,
-                                args=tuple(),
-                                payload=(bv, fb))
+                                args=(bv,),
+                                payload=(fb,))
 
     def UFXPLT(self, left, right):
         """Returns the formula left < right."""

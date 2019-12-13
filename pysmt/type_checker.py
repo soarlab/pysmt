@@ -288,17 +288,25 @@ class SimpleTypeChecker(walkers.DagWalker):
         assert len(args) == 0
         return BVType(formula.bv_width())
 
-    @walkers.handles(op.UFXP_CONSTANT, op.SFXP_CONSTANT)
-    def walk_identity_fxp(self, formula, args, **kwargs):
-        assert formula is not None
-        assert len(args) == 0
-        sign = formula.is_signed_fxp_op()
+
+    def check_fxp_const(self, sign, formula, args, **kwargs):
+        total_width = args[0].width
+        frac_width = formula._content.payload[0]
+        assert type(frac_width) == int
+        assert 0 <= frac_width <= total_width
         if sign:
             cons = SFXPType
         else:
             cons = UFXPType
-        return cons(formula.fxp_total_width(),
-                    formula.fxp_frac_width())
+        return cons(total_width, frac_width)
+
+    @walkers.handles(op.UFXP_CONSTANT)
+    def walk_identity_ufxp(self, formula, args, **kwargs):
+        return self.check_fxp_const(False, formula, args, **kwargs)
+
+    @walkers.handles(op.SFXP_CONSTANT)
+    def walk_identity_sfxp(self, formula, args, **kwargs):
+        return self.check_fxp_const(True, formula, args, **kwargs)
 
     def walk_symbol(self, formula, args, **kwargs):
         assert formula is not None
