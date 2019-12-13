@@ -828,8 +828,10 @@ class FXPToBV(DagWalker):
 
         self.mgr = self.env.formula_manager
         self.symbol_map = dict()
-        self.st_bv = self.mgr.BV(0, 2)
-        self.wp_bv = self.mgr.BV(1, 2)
+        self.st_bv = self.mgr.BV(0, 1)
+        self.wp_bv = self.mgr.BV(1, 1)
+        self.ru_bv = self.mgr.BV(0, 1)
+        self.rd_bv = self.mgr.BV(1, 1)
 
     def convert(self, formula):
         return self.walk(formula)
@@ -908,6 +910,122 @@ class FXPToBV(DagWalker):
     def walk_sfxp_sub(self, formula, args, **kwargs):
         return convet_sfxp_lop(self.mgr.BVSub, formula, args, **kwargs)
 
+    def walk_ufxp_mul(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        extended_width = total_width * 2
+        frac_width = ty.frac_width
+
+        om = args[0]
+        rm = args[1]
+        left = args[2]
+        right = args[3]
+
+        # sign extended to double bit-width
+        extended_left = self.bv_extend(left, total_width, False)
+        extended_right = self.bv_extend(right, total_width, False)
+
+        # perform multiplication
+        # the result is
+        # | integral part (2*int_width) | fractional part (2* frac_width)|
+        # that represents the exact result
+        # x*y/2^(2*fb)
+        precise_res_in_bv = self.mgr.BVMul(extended_left, extended_right)
+        # do rounding
+        dumped_bits = self.mgr.BVExtract(precise_res_in_bv, 0, frac_width - 1)
+        rounded_res_in_bv = self.mgr.BVExtract(precise_res_in_bv, frac_width,
+                extended_width - 1)
+        # if rounding mode is round up and the last frac_width bits are not 0s,
+        # round the left part up by 1
+        # otherwise use the remaining bits
+        rounded_res_in_bv = self.mgr.Ite(
+                self.mgr.And(
+                    self.mgr.Equals(rm, self.ru_bv),
+                    self.mgr.Not(
+                        self.mgr.Equals(
+                            dumped_bits,
+                            self.mgr.BV(0, frac_width)))),
+                self.mgr.BVAdd(
+                    rounded_res_in_bv,
+                    self.mgr.BV(1, extended_width - frac_width)),
+                rounded_res_in_bv)
+
+        # overflow handling
+        max_value_in_extended_width = self.mgr.BV(2**total_width - 1,
+                extended_width - frac_width) 
+
+        wrapped_res = self.mgr.BVExtract(rounded_res_in_bv, 0, total_width - 1)
+        saturated_res = self.mgr.Ite(
+                self.mgr.BVUGT(rounded_res_in_bv, max_value_in_extended_width),
+                self.mgr.BV(2**total_width - 1, total_width),
+                wrapped_res)
+
+        return self.mgr.Ite(
+                self.mgr.Equals(om, self.wp_bv),
+                wrapped_res,
+                saturated_res)
+
+    def walk_sfxp_mul(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        extended_width = total_width * 2
+        frac_width = ty.frac_width
+
+        om = args[0]
+        rm = args[1]
+        left = args[2]
+        right = args[3]
+
+        # sign extended to double bit-width
+        extended_left = self.bv_extend(left, total_width, False)
+        extended_right = self.bv_extend(right, total_width, False)
+
+        # perform multiplication
+        # the result is
+        # | integral part (2*int_width) | fractional part (2* frac_width)|
+        # that represents the exact result
+        # x*y/2^(2*fb)
+        precise_res_in_bv = self.mgr.BVMul(extended_left, extended_right)
+        # do rounding
+        dumped_bits = self.mgr.BVExtract(precise_res_in_bv, 0, frac_width - 1)
+        rounded_res_in_bv = self.mgr.BVExtract(precise_res_in_bv, frac_width,
+                extended_width - 1)
+        # if rounding mode is round up and the last frac_width bits are not 0s,
+        # round the left part up by 1
+        # otherwise use the remaining bits
+        rounded_res_in_bv = self.mgr.Ite(
+                self.mgr.And(
+                    self.mgr.Equals(rm, self.ru_bv),
+                    self.mgr.Not(
+                        self.mgr.Equals(
+                            dumped_bits,
+                            self.mgr.BV(0, frac_width)))),
+                self.mgr.BVAdd(
+                    rounded_res_in_bv,
+                    self.mgr.BV(1, extended_width - frac_width)),
+                rounded_res_in_bv)
+
+        # overflow handling
+        max_value_in_extended_width = self.mgr.BV(2**(total_width - 1) - 1,
+                extended_width - frac_width) 
+        min_value_in_extended_width = self.mgr.BV((2**(total_width - frac_width
+            + 1) - 1) << (total_width - 1), extended_width - frac_width)
+
+        wrapped_res = self.mgr.BVExtract(rounded_res_in_bv, 0, total_width - 1)
+        saturated_res = self.mgr.Ite(
+                self.mgr.BVSGT(rounded_res_in_bv, max_value_in_extended_width),
+                self.mgr.BV(2**(total_width - 1) - 1, total_width),
+                self.mgr.Ite(
+                    self.mgr.BVSLT(rounded_res_in_bv,
+                        min_value_in_extended_width),
+                    self.mgr.BV(1 << (total_width - 1), total_width),
+                    wrapped_res))
+
+        return self.mgr.Ite(
+                self.mgr.Equals(om, self.wp_bv),
+                wrapped_res,
+                saturated_res)
+
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
         if ty.is_fxp_type():
@@ -915,10 +1033,10 @@ class FXPToBV(DagWalker):
                 self.symbol_map[formula] = \
                     self.mgr.FreshSymbol(types.BVType(ty.total_width))
                 return self.symbol_map[formula]
-        elif ty.is_fxp_om_type() or ty.is_fxp_om_type():
+        elif ty.is_fxp_om_type() or ty.is_fxp_rm_type():
             if formula not in self.symbol_map:
                 self.symbol_map[formula] = \
-                    self.mgr.FreshSymbol(types.BVType(2))
+                    self.mgr.FreshSymbol(types.BVType(1))
                 return self.symbol_map[formula]
         else:
             return formula
@@ -928,6 +1046,12 @@ class FXPToBV(DagWalker):
 
     def walk_wp(self, formula, **kwargs):
         return self.wp_bv
+
+    def walk_ru(self, formula, **kwargs):
+        return self.ru_bv
+
+    def walk_rd(self, formula, **kwargs):
+        return self.rd_bv
 
     def walk_equals(self, formula, args, **kwargs):
         left = args[0]

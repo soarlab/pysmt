@@ -348,6 +348,8 @@ def SFXPDiv(om, rm, left, right):
 
 ST = get_env().formula_manager.ST()
 WP = get_env().formula_manager.WP()
+RU = get_env().formula_manager.RU()
+RD = get_env().formula_manager.RD()
 
 def ToReal(formula):
     """Explicit cast of a term into a Real term."""

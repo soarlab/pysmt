@@ -1154,6 +1154,12 @@ class FormulaManager(object):
     def WP(self):
         return self.create_node(node_type=op.WP, args=())
 
+    def RU(self):
+        return self.create_node(node_type=op.RU, args=())
+
+    def RD(self):
+        return self.create_node(node_type=op.RD, args=())
+
     #
     # Helper functions
     #
