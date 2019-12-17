@@ -890,7 +890,7 @@ class FXPToBV(DagWalker):
                 saturated_sum)
 
     def walk_sfxp_add(self, formula, args, **kwargs):
-        return convet_sfxp_lop(self.mgr.BVAdd, formula, args, **kwargs)
+        return self.convert_sfxp_lop(self.mgr.BVAdd, formula, args, **kwargs)
 
     def walk_ufxp_sub(self, formula, args, **kwargs):
         ty = self.env.stc.get_type(formula)
@@ -908,7 +908,7 @@ class FXPToBV(DagWalker):
                 saturated_sub)
 
     def walk_sfxp_sub(self, formula, args, **kwargs):
-        return convet_sfxp_lop(self.mgr.BVSub, formula, args, **kwargs)
+        return self.convert_sfxp_lop(self.mgr.BVSub, formula, args, **kwargs)
 
     def walk_ufxp_mul(self, formula, args, **kwargs):
         ty = self.env.stc.get_type(formula)
@@ -1063,6 +1063,15 @@ class FXPToBV(DagWalker):
 
     def walk_not(self, formula, args, **kwargs):
         return self.mgr.Not(args[0])
+
+    def walk_bv_constant(self, formula, args, **kwargs):
+        return formula
+
+    def walk_ufxp_constant(self, formula, args, **kwargs):
+        return formula.arg(0)
+
+    def walk_sfxp_constant(self, formula, args, **kwargs):
+        return formula.arg(0)
 
 def get_fp_bv_converter(environment=None):
     fp_bv_converter = FXPToBV(environment)

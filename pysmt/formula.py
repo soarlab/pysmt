@@ -1122,7 +1122,7 @@ class FormulaManager(object):
         return self.create_node(node_type=op.UFXP_MUL,
                                 args=(om, rm, left, right))
 
-    def SFXPSub(self, om, left, right):
+    def SFXPMul(self, om, rm, left, right):
         """Returns the multiplication of two signed fixed-points."""
         return self.create_node(node_type=op.SFXP_MUL,
                                 args=(om, rm, left, right))
