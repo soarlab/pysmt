@@ -346,6 +346,30 @@ def UFXPDiv(om, rm, left, right):
 def SFXPDiv(om, rm, left, right):
     return get_env().formula_manager.SFXPDiv(om, rm, left, right)
 
+def UFXPLT(left, right):
+    return get_env().formula_manager.UFXPLT(left, right)
+
+def UFXPLE(left, right):
+    return get_env().formula_manager.UFXPLE(left, right)
+
+def UFXPGT(left, right):
+    return get_env().formula_manager.UFXPGT(left, right)
+
+def UFXPGE(left, right):
+    return get_env().formula_manager.UFXPGE(left, right)
+
+def SFXPLT(left, right):
+    return get_env().formula_manager.SFXPLT(left, right)
+
+def SFXPLE(left, right):
+    return get_env().formula_manager.SFXPLE(left, right)
+
+def SFXPGT(left, right):
+    return get_env().formula_manager.SFXPGT(left, right)
+
+def SFXPGE(left, right):
+    return get_env().formula_manager.SFXPGE(left, right)
+
 ST = get_env().formula_manager.ST()
 WP = get_env().formula_manager.WP()
 RU = get_env().formula_manager.RU()
