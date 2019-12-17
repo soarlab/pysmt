@@ -977,8 +977,8 @@ class FXPToBV(DagWalker):
         right = args[3]
 
         # sign extended to double bit-width
-        extended_left = self.bv_extend(left, total_width, False)
-        extended_right = self.bv_extend(right, total_width, False)
+        extended_left = self.bv_extend(left, total_width, True)
+        extended_right = self.bv_extend(right, total_width, True)
 
         # perform multiplication
         # the result is
