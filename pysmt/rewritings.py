@@ -837,10 +837,10 @@ class FXPToBV(DagWalker):
         return self.walk(formula)
 
     def bv_extend(self, bv, length, sign):
-        extension = self.mgr.BV(2**length - 1, length) \
-            if sign else self.mgr.BV(0, length)
-
-        return self.mgr.BVConcat(extension, bv)
+        if sign:
+            return self.mgr.BVSExt(bv, length)
+        else:
+            return self.mgr.BVZExt(bv, length)
 
     def walk_ufxp_add(self, formula, args, **kwargs):
         ty = self.env.stc.get_type(formula)
@@ -867,10 +867,10 @@ class FXPToBV(DagWalker):
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
         extended_width = total_width + 1
-        max_value = self.mgr.BV(2**(total_width - 1) - 1, total_width)
-        extended_max_value = self.mgr.BV(2**(total_width - 1) - 1, extended_width)
-        min_value = self.mgr.BV(2**(total_width - 1), total_width)
-        extended_min_value = self.mgr.BV((3 << (total_width - 1)), extended_width)
+        max_value = self.mgr.SBV(2**(total_width - 1) - 1, total_width)
+        extended_max_value = self.mgr.SBV(2**(total_width - 1) - 1, extended_width)
+        min_value = self.mgr.SBV(-2**(total_width - 1), total_width)
+        extended_min_value = self.mgr.SBV(-2**(total_width - 1), extended_width)
         om = args[0]
         left = args[1]
         right = args[2]
