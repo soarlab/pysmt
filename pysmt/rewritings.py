@@ -1104,17 +1104,26 @@ class FXPToBV(DagWalker):
         remainder = self.mgr.BVSRem(extended_dividend, extended_divisor)
 
         # do rounding
+        def get_bv_sign(bv):
+            msb_pos = total_width - 1
+            return self.mgr.Equals(
+                    self.mgr.BVExtract(bv, msb_pos, msb_pos),
+                    self.mgr.BV(1, 1))
+
         if_ru = self.mgr.Equals(rm, self.ru_bv)
-        if_non_neg = self.mgr.BVSGE(extended_res, extended_zero)
+        dividend_sign = get_bv_sign(dividend)
+        divisor_sign = get_bv_sign(divisor)
+        if_pos = self.mgr.Not(
+                self.mgr.Xor(dividend_sign, divisor_sign))
         rounded_res = self.mgr.Ite(
                 self.mgr.Or(
-                    self.mgr.Xor(if_ru, if_non_neg),
+                    self.mgr.Xor(if_ru, if_pos),
                     self.mgr.Equals(
                         remainder,
                         extended_zero)),
                 extended_res,
                 self.mgr.Ite(
-                    self.mgr.And(if_ru, if_non_neg),
+                    self.mgr.And(if_ru, if_pos),
                     self.mgr.BVAdd(extended_res, extended_one),
                     self.mgr.BVSub(extended_res, extended_one)))
 
@@ -1136,9 +1145,12 @@ class FXPToBV(DagWalker):
                 self.mgr.Equals(divisor, zero),
                 allones,
                 self.mgr.Ite(
-                    self.mgr.Equals(om, self.wp_bv),
-                    wrapped_res,
-                    saturated_res))
+                    self.mgr.Equals(dividend, zero),
+                    zero,
+                    self.mgr.Ite(
+                        self.mgr.Equals(om, self.wp_bv),
+                        wrapped_res,
+                        saturated_res)))
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
