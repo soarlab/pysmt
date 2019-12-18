@@ -1034,20 +1034,20 @@ class FXPToBV(DagWalker):
 
         om = args[0]
         rm = args[1]
-        divisor = args[2]
-        dividend = args[3]
+        dividend = args[2]
+        divisor = args[3]
 
         zero = self.mgr.BV(0, total_width)
         allones = self.mgr.BV(2**total_width - 1, total_width)
 
         # x/y needs to rounds to z/(2^fb)
         # this amounts to (2^fb)*(x/y) rounds to z
-        extended_divisor = self.mgr.BVLShl(
-                self.bv_extend(divisor, frac_width, False),
+        extended_dividend = self.mgr.BVLShl(
+                self.bv_extend(dividend, frac_width, False),
                 self.mgr.BV(frac_width, extended_width))
-        extended_dividend = self.bv_extend(dividend, frac_width, False)
-        extended_res = self.mgr.BVUDiv(extended_divisor, extended_dividend)
-        remainder = self.mgr.BVURem(extended_divisor, extended_dividend)
+        extended_divisor = self.bv_extend(divisor, frac_width, False)
+        extended_res = self.mgr.BVUDiv(extended_dividend, extended_divisor)
+        remainder = self.mgr.BVURem(extended_dividend, extended_divisor)
 
         # do rounding
         rounded_res = self.mgr.Ite(
@@ -1063,14 +1063,14 @@ class FXPToBV(DagWalker):
         # overflow handling
         max_value = self.mgr.BV(2**total_width - 1, total_width)
         extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
-        wrapped_res = self.mgr.BVExtract(extended_res, 0, total_width - 1)
+        wrapped_res = self.mgr.BVExtract(rounded_res, 0, total_width - 1)
         saturated_res = self.mgr.Ite(
                 self.mgr.BVUGT(extended_res, extended_max_value),
                 max_value,
                 wrapped_res)
 
         return self.mgr.Ite(
-                self.mgr.Equals(dividend, zero),
+                self.mgr.Equals(divisor, zero),
                 allones,
                 self.mgr.Ite(
                     self.mgr.Equals(om, self.wp_bv),
@@ -1086,8 +1086,8 @@ class FXPToBV(DagWalker):
 
         om = args[0]
         rm = args[1]
-        divisor = args[2]
-        dividend = args[3]
+        dividend = args[2]
+        divisor = args[3]
 
         zero = self.mgr.BV(0, total_width)
         extended_zero = self.mgr.BV(0, extended_width)
@@ -1096,12 +1096,12 @@ class FXPToBV(DagWalker):
 
         # x/y needs to rounds to z/(2^fb)
         # this amounts to (2^fb)*(x/y) rounds to z
-        extended_divisor = self.mgr.BVLShl(
-                self.bv_extend(divisor, frac_width + 1, True),
+        extended_dividend = self.mgr.BVLShl(
+                self.bv_extend(dividend, frac_width + 1, True),
                 self.mgr.BV(frac_width, extended_width))
-        extended_dividend = self.bv_extend(dividend, frac_width + 1, True)
-        extended_res = self.mgr.BVSDiv(extended_divisor, extended_dividend)
-        remainder = self.mgr.BVSRem(extended_divisor, extended_dividend)
+        extended_divisor = self.bv_extend(divisor, frac_width + 1, True)
+        extended_res = self.mgr.BVSDiv(extended_dividend, extended_divisor)
+        remainder = self.mgr.BVSRem(extended_dividend, extended_divisor)
 
         # do rounding
         if_ru = self.mgr.Equals(rm, self.ru_bv)
@@ -1123,7 +1123,7 @@ class FXPToBV(DagWalker):
         extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
         min_value = self.mgr.SBV(-(2**(total_width - 1)), total_width)
         extended_min_value = self.mgr.SBV(-(2**(total_width - 1)), extended_width)
-        wrapped_res = self.mgr.BVExtract(extended_res, 0, total_width - 1)
+        wrapped_res = self.mgr.BVExtract(rounded_res, 0, total_width - 1)
         saturated_res = self.mgr.Ite(
                 self.mgr.BVSGT(extended_res, extended_max_value),
                 max_value,
@@ -1133,7 +1133,7 @@ class FXPToBV(DagWalker):
                     wrapped_res))
 
         return self.mgr.Ite(
-                self.mgr.Equals(dividend, zero),
+                self.mgr.Equals(divisor, zero),
                 allones,
                 self.mgr.Ite(
                     self.mgr.Equals(om, self.wp_bv),
