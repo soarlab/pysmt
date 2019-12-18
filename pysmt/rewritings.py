@@ -1026,6 +1026,120 @@ class FXPToBV(DagWalker):
                 wrapped_res,
                 saturated_res)
 
+    def walk_ufxp_div(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        extended_width = total_width + frac_width
+
+        om = args[0]
+        rm = args[1]
+        divisor = args[2]
+        dividend = args[3]
+
+        zero = self.mgr.BV(0, total_width)
+        allones = self.mgr.BV(2**total_width - 1, total_width)
+
+        # x/y needs to rounds to z/(2^fb)
+        # this amounts to (2^fb)*(x/y) rounds to z
+        extended_divisor = self.mgr.BVLShl(
+                self.bv_extend(divisor, frac_width, False),
+                self.mgr.BV(frac_width, extended_width))
+        extended_dividend = self.bv_extend(dividend, frac_width, False)
+        extended_res = self.mgr.BVUDiv(extended_divisor, extended_dividend)
+        remainder = self.mgr.BVURem(extended_divisor, extended_dividend)
+
+        # do rounding
+        rounded_res = self.mgr.Ite(
+                self.mgr.And(
+                    self.mgr.Equals(rm, self.ru_bv),
+                    self.mgr.Not(
+                        self.mgr.Equals(
+                            remainder,
+                            self.mgr.BV(0, extended_width)))),
+                self.mgr.BVAdd(extended_res, self.mgr.BV(1, extended_width)),
+                extended_res)
+
+        # overflow handling
+        max_value = self.mgr.BV(2**total_width - 1, total_width)
+        extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
+        wrapped_res = self.mgr.BVExtract(extended_res, 0, total_width - 1)
+        saturated_res = self.mgr.Ite(
+                self.mgr.BVUGT(extended_res, extended_max_value),
+                max_value,
+                wrapped_res)
+
+        return self.mgr.Ite(
+                self.mgr.Equals(dividend, zero),
+                allones,
+                self.mgr.Ite(
+                    self.mgr.Equals(om, self.wp_bv),
+                    wrapped_res,
+                    saturated_res))
+
+    def walk_sfxp_div(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        # we need the additional bit as the bvsdiv may overflow
+        extended_width = total_width + frac_width + 1
+
+        om = args[0]
+        rm = args[1]
+        divisor = args[2]
+        dividend = args[3]
+
+        zero = self.mgr.BV(0, total_width)
+        extended_zero = self.mgr.BV(0, extended_width)
+        extended_one = self.mgr.BV(1, extended_width)
+        allones = self.mgr.BV(2**total_width - 1, total_width)
+
+        # x/y needs to rounds to z/(2^fb)
+        # this amounts to (2^fb)*(x/y) rounds to z
+        extended_divisor = self.mgr.BVLShl(
+                self.bv_extend(divisor, frac_width + 1, True),
+                self.mgr.BV(frac_width, extended_width))
+        extended_dividend = self.bv_extend(dividend, frac_width + 1, True)
+        extended_res = self.mgr.BVSDiv(extended_divisor, extended_dividend)
+        remainder = self.mgr.BVSRem(extended_divisor, extended_dividend)
+
+        # do rounding
+        if_ru = self.mgr.Equals(rm, self.ru_bv)
+        if_non_neg = self.mgr.BVSGE(extended_res, extended_zero)
+        rounded_res = self.mgr.Ite(
+                self.mgr.Or(
+                    self.mgr.Xor(if_ru, if_non_neg),
+                    self.mgr.Equals(
+                        remainder,
+                        extended_zero)),
+                extended_res,
+                self.mgr.Ite(
+                    self.mgr.And(if_ru, if_non_neg),
+                    self.mgr.BVAdd(extended_res, extended_one),
+                    self.mgr.BVSub(extended_res, extended_one)))
+
+        # overflow handling
+        max_value = self.mgr.BV(2**total_width - 1, total_width)
+        extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
+        min_value = self.mgr.SBV(-(2**(total_width - 1)), total_width)
+        extended_min_value = self.mgr.SBV(-(2**(total_width - 1)), extended_width)
+        wrapped_res = self.mgr.BVExtract(extended_res, 0, total_width - 1)
+        saturated_res = self.mgr.Ite(
+                self.mgr.BVSGT(extended_res, extended_max_value),
+                max_value,
+                self.mgr.Ite(
+                    self.mgr.BVSLT(extended_res, extended_min_value),
+                    min_value,
+                    wrapped_res))
+
+        return self.mgr.Ite(
+                self.mgr.Equals(dividend, zero),
+                allones,
+                self.mgr.Ite(
+                    self.mgr.Equals(om, self.wp_bv),
+                    wrapped_res,
+                    saturated_res))
+
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
         if ty.is_fxp_type():
