@@ -23,6 +23,7 @@ from itertools import combinations
 from pysmt.walkers import DagWalker, IdentityDagWalker, handles
 import pysmt.typing as types
 import pysmt.operators as op
+from pysmt.constants import Fraction
 
 
 class CNFizer(DagWalker):
@@ -1211,9 +1212,41 @@ class FXPToBV(DagWalker):
     def walk_sfxp_le(self, formula, args, **kwargs):
         return self.mgr.BVSLE(args[0], args[1])
 
+class FXPToReal(DagWalker):
+    def __init__(self, environment=None): 
+        DagWalker.__init__(self, environment)
+
+        self.mgr = self.env.formula_manager
+        self.symbol_map = dict()
+        self.st_bv = self.mgr.BV(0, 1)
+        self.wp_bv = self.mgr.BV(1, 1)
+        self.ru_bv = self.mgr.BV(0, 1)
+        self.rd_bv = self.mgr.BV(1, 1)
+
+    def convert(self, formula):
+        return self.walk(formula)
+
+    def walk_ufxp_constant(self, formula, args, **kwargs):
+        bv = args[0]
+        bv_val = bv._content.payload[0]
+        frac_width = formula._content.payload[0]
+        return self.mgr.Real(Fraction(bv_val, 2**frac_width))
+
+    def walk_sfxp_constant(self, formula, args, **kwargs):
+        bv = args[0]
+        bv_val = bv._content.payload[0]
+        frac_width = formula._content.payload[0]
+        return self.mgr.Real(Fraction(bv_val, 2**frac_width))
+
+    def walk_bv_constant(self, formula, args, **kwargs):
+        return formula
+
 def get_fp_bv_converter(environment=None):
     fp_bv_converter = FXPToBV(environment)
     return fp_bv_converter
+
+def get_fp_real_converter(environment=None):
+    return FXPToReal(environment)
 
 def nnf(formula, environment=None):
     """Converts the given formula in NNF"""
