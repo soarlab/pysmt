@@ -1128,8 +1128,8 @@ class FXPToBV(DagWalker):
                     self.mgr.BVSub(extended_res, extended_one)))
 
         # overflow handling
-        max_value = self.mgr.BV(2**total_width - 1, total_width)
-        extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
+        max_value = self.mgr.BV(2**(total_width-1) - 1, total_width)
+        extended_max_value = self.mgr.BV(2**(total_width-1) - 1, extended_width)
         min_value = self.mgr.SBV(-(2**(total_width - 1)), total_width)
         extended_min_value = self.mgr.SBV(-(2**(total_width - 1)), extended_width)
         wrapped_res = self.mgr.BVExtract(rounded_res, 0, total_width - 1)
