@@ -1211,6 +1211,14 @@ class FXPToBV(DagWalker):
     def walk_sfxp_le(self, formula, args, **kwargs):
         return self.mgr.BVSLE(args[0], args[1])
 
+    def walk_bool_constant(self, formula, args, **kwargs):
+        return formula
+
+    def walk_iff(self, formula, args, **kwargs):
+        left = args[0]
+        right = args[1]
+        return self.mgr.Iff(left, right)
+
 def get_fp_bv_converter(environment=None):
     fp_bv_converter = FXPToBV(environment)
     return fp_bv_converter
