@@ -25,7 +25,7 @@ from itertools import chain
 from six.moves import xrange
 
 
-ALL_TYPES = list(xrange(0,84))
+ALL_TYPES = list(xrange(0,85))
 
 (
 FORALL, EXISTS, AND, OR, NOT, IMPLIES, IFF, # Boolean Logic (0-6)
@@ -90,6 +90,7 @@ SFXP_LT, SFXP_LE,                           # Signed fixed-point relations (74-7
 SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,     # Signed fixed-point arithmetic (76-79)
 ST, WP,                                     # Overflow mode constants
 RU, RD,                                     # Rounding mode constants
+REALTOINT,                                  # Real to Integer Conversion (84)
 ) = ALL_TYPES
 
 QUANTIFIERS = frozenset([FORALL, EXISTS])
@@ -125,7 +126,8 @@ BV_OPERATORS = frozenset([BV_NOT, BV_AND, BV_OR, BV_XOR,
 STR_OPERATORS = frozenset([STR_LENGTH, STR_CONCAT, STR_INDEXOF, STR_REPLACE,
                            STR_SUBSTR, STR_CHARAT, STR_TO_INT, INT_TO_STR,])
 
-IRA_OPERATORS = frozenset([PLUS, MINUS, TIMES, TOREAL, DIV, POW, BV_TONATURAL])
+IRA_OPERATORS = frozenset([PLUS, MINUS, TIMES, TOREAL, DIV, POW, BV_TONATURAL,
+                          REALTOINT,])
 
 ARRAY_OPERATORS = frozenset([ARRAY_SELECT, ARRAY_STORE, ARRAY_VALUE])
 
@@ -259,4 +261,5 @@ __OP_STR__ = {
     WP : "WP",
     RU : "RU",
     RD : "RD",
+    REALTOINT : "REALTOINT",
 }
