@@ -1048,11 +1048,17 @@ class FormulaManager(object):
 
     # FixedPoint functions
     def UFXP(self, bv, fb):
+        if type(fb) is FNode and (fb.node_type() is op.INT_CONSTANT or
+                                  fb.node_type() is op.REAL_CONSTANT):
+                fb = int(fb._content.payload)
         return self.create_node(node_type=op.UFXP_CONSTANT,
                                 args=(bv,),
                                 payload=(fb,))
 
     def SFXP(self, bv, fb):
+        if type(fb) is FNode and (fb.node_type() is op.INT_CONSTANT or
+                                  fb.node_type() is op.REAL_CONSTANT):
+                fb = int(fb._content.payload)
         return self.create_node(node_type=op.SFXP_CONSTANT,
                                 args=(bv,),
                                 payload=(fb,))
