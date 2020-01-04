@@ -8,14 +8,14 @@ from pysmt.typing import UFXPType, SFXPType, FXP_OM, FXP_RM
 from pysmt.rewritings import *
 
 
-x = Symbol("x", UFXPType(2,1))
+#x = Symbol("x", UFXPType(2,2))
 
 #y = Symbol("y", UFXPType(10,5))
 #z = Symbol("z", UFXPType(10,5))
 
-o = Symbol('o', FXP_OM)
+#o = Symbol('o', FXP_OM)
 
-r = Symbol('r', FXP_RM)
+#r = Symbol('r', FXP_RM)
 
 
 #z = Equals(x, y)
@@ -31,16 +31,23 @@ r = Symbol('r', FXP_RM)
 
 #kk = UFXPMul(o, r, x, y)
 
-b1 = BV(1, 2)
-b2 = BV(3, 2)
+b1 = BV(2, 4)
+b2 = BV(13, 4)
+b3 = BV(15, 4)
+conv =  get_fp_real_converter()
 
-conv =  get_fp_bv_converter()
+a = UFXP(b1,2)
+b = UFXP(b2,2)
+c = UFXP(b3,2)
 
-#a = UFXP(b1,2)
-b = UFXP(b2,1)
-print(conv.convert(b))
-#res = UFXPAdd(ST,a,b)
-model = get_model(conv.convert(UFXPLE(x, b)))
+k = RealToInt(conv.convert(b))
+kk=Real(3)
+#print(Ceiling(conv.convert(b)))
+#pip install z3-solver
+res = UFXPAdd(WP,a,b)
+#print(conv.convert(res))
+#model = get_model(conv.convert(Equals(c, res)))
+model = get_model(Equals(k, kk))
 if model:
     print ('sat')
     print (model)

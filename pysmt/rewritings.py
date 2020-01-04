@@ -1237,7 +1237,8 @@ class FXPToReal(DagWalker):
             min_value = self.mgr.Real(Fraction(-2**(total_width - 1), 2**frac_width))
 
         modulo=self.mgr.Real(2**(total_width-frac_width))
-        divres=self.mgr.ToReal(self.mgr.Ceiling(self.mgr.Div(realval,modulo)))
+        flodiv=self.mgr.RealToInt(self.mgr.Div(realval,modulo))
+        divres=self.mgr.ToReal(flodiv)
         remain=self.mgr.Minus(realval,self.mgr.Times(modulo,divres))
         if sign==1:
             remain=self.mgr.Ite(
@@ -1257,7 +1258,8 @@ class FXPToReal(DagWalker):
     
     def round_real(self,realval,rm,frac_width):
         base=self.mgr.Real(2**frac_width)
-        result = self.mgr.ToReal(self.mgr.Ceiling(self.mgr.Times(realval,base)))
+        flo=self.mgr.RealToInt(self.mgr.Times(realval,base))
+        result = self.mgr.ToReal(flo)
         frac = self.mgr.Minus(result, self.mgr.Times(realval,base)) 
         result = self.mgr.Ite(
                 self.mgr.And(
@@ -1273,7 +1275,7 @@ class FXPToReal(DagWalker):
 
     def process_real_round(self,realval,om,rm,sign,total_width,frac_width):
         tempres = self.round_real(realval,rm,frac_width)
-        result = self.process_real_noround(result,om,sign,total_width,frac_width)
+        result = self.process_real_noround(tempres,om,sign,total_width,frac_width)
         return result
 
 
