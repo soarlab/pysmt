@@ -1246,7 +1246,7 @@ class FXPToReal(DagWalker):
                 remain, 
 		        self.mgr.Minus(remain,modulo)
                 )
-        wrapped_res = self.mgr.Div(self.mgr.ToReal(remain),self.mgr.Real(2**frac_width))
+        wrapped_res = remain
         saturated_res = self.mgr.Ite(
                 self.mgr.GT(realval, max_value),
                 max_value, 

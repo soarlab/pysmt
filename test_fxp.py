@@ -31,23 +31,23 @@ from pysmt.rewritings import *
 
 #kk = UFXPMul(o, r, x, y)
 
-b1 = BV(2, 4)
+b1 = BV(5, 4)
 b2 = BV(13, 4)
-b3 = BV(15, 4)
+b3 = BV(2, 4)
 conv =  get_fp_real_converter()
 
 a = UFXP(b1,2)
 b = UFXP(b2,2)
 c = UFXP(b3,2)
 
-k = RealToInt(conv.convert(b))
+#k = RealToInt(conv.convert(b))
 kk=Real(3)
 #print(Ceiling(conv.convert(b)))
 #pip install z3-solver
-res = UFXPAdd(WP,a,b)
-#print(conv.convert(res))
-#model = get_model(conv.convert(Equals(c, res)))
-model = get_model(Equals(k, kk))
+res = UFXPAdd(ST,a,b)
+print(conv.convert(res))
+model = get_model(conv.convert(Equals(c, res)))
+
 if model:
     print ('sat')
     print (model)
