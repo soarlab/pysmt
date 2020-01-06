@@ -1427,7 +1427,7 @@ class FXPToReal(DagWalker):
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
         frac_width = formula._content.payload[0]
-        if bv_val>2**(total_width-1):
+        if bv_val>2**(total_width-1)-1:
             bv_val=bv_val-2**total_width
         return self.mgr.Real(Fraction(bv_val, 2**frac_width))
 

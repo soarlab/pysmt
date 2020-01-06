@@ -33,7 +33,7 @@ from pysmt.rewritings import *
 
 b1 = BV(5, 4)
 b2 = BV(13, 4)
-b3 = BV(2, 4)
+b3 = BV(8, 4)
 conv =  get_fp_real_converter()
 
 a = UFXP(b1,2)
@@ -42,10 +42,10 @@ c = UFXP(b3,2)
 
 #k = RealToInt(conv.convert(b))
 kk=Real(3)
-#print(Ceiling(conv.convert(b)))
+print(conv.convert(b))
 #pip install z3-solver
-res = UFXPAdd(ST,a,b)
-print(conv.convert(res))
+res = UFXPSub(WP,a,b)
+#print(conv.convert(res))
 model = get_model(conv.convert(Equals(c, res)))
 
 if model:
