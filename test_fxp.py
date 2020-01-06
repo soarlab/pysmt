@@ -31,9 +31,9 @@ from pysmt.rewritings import *
 
 #kk = UFXPMul(o, r, x, y)
 
-b1 = BV(5, 4)
-b2 = BV(13, 4)
-b3 = BV(8, 4)
+b1 = BV(14, 4)
+b2 = BV(3, 4)
+b3 = BV(3, 4)
 conv =  get_fp_real_converter()
 
 a = UFXP(b1,2)
@@ -44,7 +44,7 @@ c = UFXP(b3,2)
 kk=Real(3)
 print(conv.convert(b))
 #pip install z3-solver
-res = UFXPSub(WP,a,b)
+res = UFXPDiv(WP,RD,a,b)
 #print(conv.convert(res))
 model = get_model(conv.convert(Equals(c, res)))
 
