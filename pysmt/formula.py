@@ -492,6 +492,7 @@ class FormulaManager(object):
         cond = self.Equals(self.ToReal(int_val), formula)
         return self.Ite(cond, int_val, self.Plus(int_val, self.Int(1)))
 
+
     def Truncate(self, formula):
         """ Truncate a real formula to int. """
         cond = self.GE(formula, self.Real(0))
