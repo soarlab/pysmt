@@ -1367,7 +1367,7 @@ class FXPToReal(DagWalker):
         rm = args[1]
         left = args[2]
         right = args[3]
-        result = self.mgr.Times(left,right)
+        result = self.mgr.Div(left,right)
         return self.process_real_round(result,om,rm,1,total_width,frac_width)
 
 
@@ -1438,11 +1438,11 @@ class FXPToReal(DagWalker):
     def walk_ufxp_le(self, formula, args, **kwargs):
         return self.mgr.LE(args[0], args[1])
 
-    def walk_sfxp_lt(self, formula, args, **kwargs):
-        return self.mgr.LT(args[0], args[1])
+    def walk_sfxp_gt(self, formula, args, **kwargs):
+        return self.mgr.GT(args[0], args[1])
 
-    def walk_sfxp_le(self, formula, args, **kwargs):
-        return self.mgr.LE(args[0], args[1])
+    def walk_sfxp_ge(self, formula, args, **kwargs):
+        return self.mgr.GE(args[0], args[1])
 
 
 
