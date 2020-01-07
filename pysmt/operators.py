@@ -25,7 +25,7 @@ from itertools import chain
 from six.moves import xrange
 
 
-ALL_TYPES = list(xrange(0,84))
+ALL_TYPES = list(xrange(0,85))
 
 (
 FORALL, EXISTS, AND, OR, NOT, IMPLIES, IFF, # Boolean Logic (0-6)
@@ -88,6 +88,7 @@ UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,     # Unsigned fixed-point arithmetic (6
 SFXP_CONSTANT,                              # Signed fixed-point constant (73)
 SFXP_LT, SFXP_LE,                           # Signed fixed-point relations (74-75)
 SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,     # Signed fixed-point arithmetic (76-79)
+SFXP_NEG,                                   # Signed fixed-point negation (80)
 ST, WP,                                     # Overflow mode constants
 RU, RD,                                     # Rounding mode constants
 ) = ALL_TYPES
@@ -130,7 +131,8 @@ IRA_OPERATORS = frozenset([PLUS, MINUS, TIMES, TOREAL, DIV, POW, BV_TONATURAL])
 ARRAY_OPERATORS = frozenset([ARRAY_SELECT, ARRAY_STORE, ARRAY_VALUE])
 
 FXP_OPERATORS = frozenset([UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,
-                           SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV])
+                           SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,
+                           SFXP_NEG])
 
 THEORY_OPERATORS = IRA_OPERATORS | BV_OPERATORS | ARRAY_OPERATORS | STR_OPERATORS | FXP_OPERATORS
 
@@ -255,6 +257,7 @@ __OP_STR__ = {
     SFXP_SUB : "SFXP_SUB",
     SFXP_MUL : "SFXP_MUL",
     SFXP_DIV : "SFXP_DIV",
+    SFXP_NEG : "SFXP_NEG",
     ST : "ST",
     WP : "WP",
     RU : "RU",

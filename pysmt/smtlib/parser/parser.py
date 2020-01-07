@@ -423,6 +423,7 @@ class SmtLibParser(object):
                             'sfxp.sub':self._operator_adapter(mgr.SFXPSub),
                             'sfxp.mul':self._operator_adapter(mgr.SFXPMul),
                             'sfxp.div':self._operator_adapter(mgr.SFXPDiv),
+                            'sfxp.neg':self._operator_adapter(mgr.SFXPNeg),
                             'sfxp.lt':self._operator_adapter(mgr.SFXPLT),
                             'sfxp.leq':self._operator_adapter(mgr.SFXPLE),
                             'sfxp.gt':self._operator_adapter(mgr.SFXPGT),

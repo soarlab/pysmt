@@ -1152,6 +1152,9 @@ class FXPToBV(DagWalker):
                         wrapped_res,
                         saturated_res)))
 
+    def walk_sfxp_neg(self, formula, args, **kwargs):
+        return self.mgr.BVNeg(args[0])
+
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
         if ty.is_fxp_type():
