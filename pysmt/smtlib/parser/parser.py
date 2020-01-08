@@ -411,6 +411,24 @@ class SmtLibParser(object):
                             'bvsub':self._operator_adapter(mgr.BVSub),
                             'bvult':self._operator_adapter(mgr.BVULT),
                             'bvxor':self._operator_adapter(mgr.BVXor),
+                            'ufxp.add':self._operator_adapter(mgr.UFXPAdd),
+                            'ufxp.sub':self._operator_adapter(mgr.UFXPSub),
+                            'ufxp.mul':self._operator_adapter(mgr.UFXPMul),
+                            'ufxp.div':self._operator_adapter(mgr.UFXPDiv),
+                            'ufxp.lt':self._operator_adapter(mgr.UFXPLT),
+                            'ufxp.leq':self._operator_adapter(mgr.UFXPLE),
+                            'ufxp.gt':self._operator_adapter(mgr.UFXPGT),
+                            'ufxp.geq':self._operator_adapter(mgr.UFXPGE),
+                            'sfxp.add':self._operator_adapter(mgr.SFXPAdd),
+                            'sfxp.sub':self._operator_adapter(mgr.SFXPSub),
+                            'sfxp.mul':self._operator_adapter(mgr.SFXPMul),
+                            'sfxp.div':self._operator_adapter(mgr.SFXPDiv),
+                            'sfxp.lt':self._operator_adapter(mgr.SFXPLT),
+                            'sfxp.leq':self._operator_adapter(mgr.SFXPLE),
+                            'sfxp.gt':self._operator_adapter(mgr.SFXPGT),
+                            'sfxp.geq':self._operator_adapter(mgr.SFXPGE),
+                            'ufxp':self._operator_adapter(mgr.UFXP),
+                            'sfxp':self._operator_adapter(mgr.SFXP),
                             '_':self._smtlib_underscore,
                             # Extended Functions
                             'bvnand':self._operator_adapter(mgr.BVNand),
@@ -633,6 +651,11 @@ class SmtLibParser(object):
         Given a token and a FormulaManager, returns the pysmt representation of
         the token
         """
+        rnd_modes = {'roundNearestTiesToEven': 'rne not implemented',
+                     'roundNearestTiesToAway': 'rna not implemented',
+                     'roundTowardPositive': mgr.RU(),
+                     'roundTowardNegative': mgr.RD(),
+                     'roundTowardZero': 'rtz not implemented',}
         res = self.cache.get(token)
         if res is None:
             if token.startswith("#"):
@@ -655,6 +678,10 @@ class SmtLibParser(object):
                 val = token[1:-1]
                 val = val.replace('""', '"')
                 res = mgr.String(val)
+            elif token in ('Saturated', 'Wrapping'):
+                res = mgr.ST() if token == 'Saturated' else mgr.WP()
+            elif token in rnd_modes.keys():
+                res = rnd_modes[token]
             else:
                 # it could be a number or a string
                 try:
@@ -804,7 +831,6 @@ class SmtLibParser(object):
         try:
             while True:
                 tk = tokens.consume_maybe()
-
                 if tk == "(":
                     while tk == "(":
                         stack.append([])
@@ -935,22 +961,36 @@ class SmtLibParser(object):
             elif op == "_":
                 ts = tokens.consume("Unexpected end of stream in %s command." % \
                                             command)
-                if ts != "BitVec":
+                if ts not in ('BitVec', 'UFXP', 'SFXP'):
                     raise PysmtSyntaxError("Unexpected token '%s' in %s command." % \
                                            (ts, command),
                                            tokens.pos_info)
 
-                size = 0
-                dim = tokens.consume()
-                try:
-                    size = int(dim)
-                except ValueError:
-                    raise PysmtSyntaxError("Unexpected token '%s' in %s command." % \
-                                           (dim, command),
-                                           tokens.pos_info)
+                if ts == 'BitVec':
+                    size = 0
+                    dim = tokens.consume()
+                    try:
+                        size = int(dim)
+                    except ValueError:
+                        raise PysmtSyntaxError("Unexpected token '%s' in %s command." % \
+                                               (dim, command),
+                                               tokens.pos_info)
+                    res = self.env.type_manager.BVType(size)
+                else: # Type is UFXP or SFXP
+                    def consume_token():
+                        dim = tokens.consume()
+                        try:
+                            res = int(dim)
+                        except ValueError:
+                            raise PysmtSyntaxError("Unexpected token '%s' in %s command." % \
+                                                   (dim, command),
+                                                   tokens.pos_info)
+                        return res
+                    tw = consume_token()
+                    fb = consume_token()
+                    res = self.env.type_manager.FXPType(ts[0] == 'S', tw, fb)
 
                 self.consume_closing(tokens, command)
-                res = self.env.type_manager.BVType(size)
             else:
                 # It must be a custom-defined type
                 base_type = self.cache.get(op)
