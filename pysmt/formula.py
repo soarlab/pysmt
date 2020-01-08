@@ -261,12 +261,12 @@ class FormulaManager(object):
 
     def Div(self, left, right):
         """ Creates an expression of the form: left / right """
-        if right.is_constant(types.REAL):
-            # If right is a constant we rewrite as left * 1/right
-            inverse = Fraction(1) / right.constant_value()
-            return self.Times(left, self.Real(inverse))
-        elif right.is_constant(types.INT):
-            raise NotImplementedError
+        # if right.is_constant(types.REAL):
+        #     # If right is a constant we rewrite as left * 1/right
+        #     inverse = Fraction(1) / right.constant_value()
+        #     return self.Times(left, self.Real(inverse))
+        # elif right.is_constant(types.INT):
+        #     raise NotImplementedError
 
         # This is a non-linear expression
         return self.create_node(node_type=op.DIV,
@@ -1067,11 +1067,17 @@ class FormulaManager(object):
 
     # FixedPoint functions
     def UFXP(self, bv, fb):
+        if type(fb) is FNode and (fb.node_type() is op.INT_CONSTANT or
+                                  fb.node_type() is op.REAL_CONSTANT):
+            fb = int(fb._content.payload)
         return self.create_node(node_type=op.UFXP_CONSTANT,
                                 args=(bv,),
                                 payload=(fb,))
 
     def SFXP(self, bv, fb):
+        if type(fb) is FNode and (fb.node_type() is op.INT_CONSTANT or
+                                  fb.node_type() is op.REAL_CONSTANT):
+                fb = int(fb._content.payload)
         return self.create_node(node_type=op.SFXP_CONSTANT,
                                 args=(bv,),
                                 payload=(fb,))

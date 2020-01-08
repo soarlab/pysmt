@@ -1227,6 +1227,11 @@ class FXPToReal(DagWalker):
     #def convert(self, formula):
     #    return self.walk(formula)
 
+    def walk_and(self, formula, args, **kwargs):
+        return self.mgr.And(*args)
+
+    def walk_implies(self, formula, args, **kwargs):
+        return self.mgr.Implies(args[0], args[1])
 
     def process_real_noround(self,realval,om,sign,total_width,frac_width):
         if sign==0:
@@ -1355,8 +1360,9 @@ class FXPToReal(DagWalker):
         rm = args[1]
         left = args[2]
         right = args[3]
-        result = self.mgr.Div(left,right)
-        return self.process_real_round(result,om,rm,0,total_width,frac_width)
+        return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
+                            self.mgr.Real(Fraction(2**total_width-1, 2**frac_width)),
+                            self.process_real_round(self.mgr.Div(left,right),om,rm,0,total_width,frac_width))
 
 
     def walk_sfxp_div(self, formula, args, **kwargs):
@@ -1367,8 +1373,10 @@ class FXPToReal(DagWalker):
         rm = args[1]
         left = args[2]
         right = args[3]
-        result = self.mgr.Div(left,right)
-        return self.process_real_round(result,om,rm,1,total_width,frac_width)
+        return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
+                            self.mgr.Real(Fraction(-1, 2**frac_width)),
+                            self.process_real_round(self.mgr.Div(left,right),om,rm,1,total_width,frac_width))
+
 
 
     def walk_symbol(self, formula, **kwargs):
@@ -1444,7 +1452,23 @@ class FXPToReal(DagWalker):
     def walk_sfxp_ge(self, formula, args, **kwargs):
         return self.mgr.GE(args[0], args[1])
 
+    def walk_sfxp_lt(self, formula, args, **kwargs):
+        return self.mgr.LT(args[0], args[1])
 
+    def walk_sfxp_le(self, formula, args, **kwargs):
+        return self.mgr.LE(args[0], args[1])
+
+    def walk_ufxp_gt(self, formula, args, **kwargs):
+        return self.mgr.GT(args[0], args[1])
+
+    def walk_ufxp_ge(self, formula, args, **kwargs):
+        return self.mgr.GE(args[0], args[1])
+
+    def walk_bool_constant(self, formula, args, *kwargs):
+        return formula
+
+    def walk_iff(self, formula, args, *kwargs):
+        return self.mgr.Iff(args[0], args[1])
 
 def get_fp_bv_converter(environment=None):
     fp_bv_converter = FXPToBV(environment)
