@@ -411,6 +411,7 @@ class SmtLibParser(object):
                             'bvsub':self._operator_adapter(mgr.BVSub),
                             'bvult':self._operator_adapter(mgr.BVULT),
                             'bvxor':self._operator_adapter(mgr.BVXor),
+                            'RNE':self._operator_adapter(mgr.RU),
                             'ufxp.add':self._operator_adapter(mgr.UFXPAdd),
                             'ufxp.sub':self._operator_adapter(mgr.UFXPSub),
                             'ufxp.mul':self._operator_adapter(mgr.UFXPMul),
@@ -1025,6 +1026,8 @@ class SmtLibParser(object):
             res = self.env.type_manager.INT()
         elif var == "Real":
             res = self.env.type_manager.REAL()
+        elif var == "RoundingMode":
+            res = self.env.type_manager.FXPRMType()
         elif var == "String":
             res = self.env.type_manager.STRING()
         else:

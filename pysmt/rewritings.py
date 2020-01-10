@@ -1190,6 +1190,9 @@ class FXPToBV(DagWalker):
     def walk_and(self, formula, args, **kwargs):
         return self.mgr.And(*args)
 
+    def walk_or(self, formula, args, **kwargs):
+        return self.mgr.Or(*args)
+
     def walk_implies(self, formula, args, **kwargs):
         left = args[0]
         right = args[1]
