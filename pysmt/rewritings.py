@@ -1219,16 +1219,19 @@ class FXPToReal(DagWalker):
 
         self.mgr = self.env.formula_manager
         self.symbol_map = dict()
-        self.st_bv = self.mgr.BV(0, 1)
-        self.wp_bv = self.mgr.BV(1, 1)
-        self.ru_bv = self.mgr.BV(0, 1)
-        self.rd_bv = self.mgr.BV(1, 1)
+        self.st_bv = self.mgr.Real(0)
+        self.wp_bv = self.mgr.Real(1)
+        self.ru_bv = self.mgr.Real(0)
+        self.rd_bv = self.mgr.Real(1)
 
     #def convert(self, formula):
     #    return self.walk(formula)
 
     def walk_and(self, formula, args, **kwargs):
         return self.mgr.And(*args)
+
+    def walk_or(self, formula, args, **kwargs):
+        return self.mgr.Or(*args)
 
     def walk_implies(self, formula, args, **kwargs):
         return self.mgr.Implies(args[0], args[1])
@@ -1377,7 +1380,15 @@ class FXPToReal(DagWalker):
                             self.mgr.Real(Fraction(-1, 2**frac_width)),
                             self.process_real_round(self.mgr.Div(left,right),om,rm,1,total_width,frac_width))
 
-
+    def walk_sfxp_neg(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        res = self.mgr.Times(self.mgr.Real(-1), args[0])
+        minimum = self.mgr.Real(Fraction(-2**(total_width-1), 2**frac_width))
+        return self.mgr.Ite(self.mgr.Equals(args[0], minimum),
+                            minimum,
+                            res)
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
