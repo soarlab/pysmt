@@ -25,7 +25,7 @@ from itertools import chain
 from six.moves import xrange
 
 
-ALL_TYPES = list(xrange(0,85))
+ALL_TYPES = list(xrange(0,86))
 
 (
 FORALL, EXISTS, AND, OR, NOT, IMPLIES, IFF, # Boolean Logic (0-6)
@@ -91,6 +91,7 @@ SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,     # Signed fixed-point arithmetic (76-
 ST, WP,                                     # Overflow mode constants
 RU, RD,                                     # Rounding mode constants
 REALTOINT,                                  # Real to Integer Conversion (84)
+SFXP_NEG,
 ) = ALL_TYPES
 
 QUANTIFIERS = frozenset([FORALL, EXISTS])
@@ -132,7 +133,7 @@ IRA_OPERATORS = frozenset([PLUS, MINUS, TIMES, TOREAL, DIV, POW, BV_TONATURAL,
 ARRAY_OPERATORS = frozenset([ARRAY_SELECT, ARRAY_STORE, ARRAY_VALUE])
 
 FXP_OPERATORS = frozenset([UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,
-                           SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV])
+                           SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV, SFXP_NEG])
 
 THEORY_OPERATORS = IRA_OPERATORS | BV_OPERATORS | ARRAY_OPERATORS | STR_OPERATORS | FXP_OPERATORS
 
@@ -262,4 +263,5 @@ __OP_STR__ = {
     RU : "RU",
     RD : "RD",
     REALTOINT : "REALTOINT",
+    SFXP_NEG : "SFXP_NEG",
 }
