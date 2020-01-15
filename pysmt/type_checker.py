@@ -119,9 +119,10 @@ class SimpleTypeChecker(walkers.DagWalker):
 
     @walkers.handles(op.SFXP_NEG)
     def walk_sfxp_neg(self, formula, args, **kwargs):
-        if not args[0].is_fxp_type() or args[0].sign == False:
+        if not args[0].is_fxp_om_type() or not args[1].is_fxp_type() \
+           or args[1].sign == False:
             return None
-        return args[0]
+        return args[1]
 
     @walkers.handles(op.ST, op.WP)
     def walk_fxp_om_const(self, formula, args, **kwargs):
