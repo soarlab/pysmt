@@ -1384,11 +1384,14 @@ class FXPToReal(DagWalker):
         ty = self.env.stc.get_type(formula)
         total_width = ty.total_width
         frac_width = ty.frac_width
-        res = self.mgr.Times(self.mgr.Real(-1), args[0])
+        res = self.mgr.Times(self.mgr.Real(-1), args[1])
         minimum = self.mgr.Real(Fraction(-2**(total_width-1), 2**frac_width))
-        return self.mgr.Ite(self.mgr.Equals(args[0], minimum),
-                            minimum,
-                            res)
+        return self.mgr.Ite(self.mgr.And(self.mgr.Equals(args[0], self.st_bv),
+                                         self.mgr.Equals(args[1], minimum)),
+                            self.mgr.Real(Fraction(2**(total_width-1)-1, 2**frac_width)),
+                            self.mgr.Ite(self.mgr.Equals(args[1], minimum),
+                                         minimum,
+                                         res))
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
