@@ -1143,9 +1143,9 @@ class FormulaManager(object):
         return self.create_node(node_type=op.SFXP_DIV,
                                 args=(om, rm, left, right))
 
-    def SFXPNeg(self, arg):
+    def SFXPNeg(self, om, arg):
         return self.create_node(node_type=op.SFXP_NEG,
-                                args=(arg,))
+                                args=(om, arg,))
 
     def ST(self):
         return self.create_node(node_type=op.ST, args=())
