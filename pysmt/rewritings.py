@@ -1270,7 +1270,7 @@ class FXPToReal(DagWalker):
             min_value = self.mgr.Real(Fraction(-2**(total_width - 1), 2**frac_width))
 
         modulo=self.mgr.Real(2**(total_width-frac_width))
-        flodiv=self.mgr.RealToInt(self.mgr.Div(realval,modulo))
+        flodiv=self.mgr.RealToInt(self.mgr.Div(realval,modulo,reduce_const=False))
         divres=self.mgr.ToReal(flodiv)
         remain=self.mgr.Minus(realval,self.mgr.Times(modulo,divres))
         if sign==1:
@@ -1390,7 +1390,7 @@ class FXPToReal(DagWalker):
         right = args[3]
         return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
                             self.mgr.Real(Fraction(2**total_width-1, 2**frac_width)),
-                            self.process_real_round(self.mgr.Div(left,right),om,rm,0,total_width,frac_width))
+                            self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,0,total_width,frac_width))
 
 
     def walk_sfxp_div(self, formula, args, **kwargs):
@@ -1403,7 +1403,7 @@ class FXPToReal(DagWalker):
         right = args[3]
         return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
                             self.mgr.Real(Fraction(-1, 2**frac_width)),
-                            self.process_real_round(self.mgr.Div(left,right),om,rm,1,total_width,frac_width))
+                            self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,1,total_width,frac_width))
 
     def walk_sfxp_neg(self, formula, args, **kwargs):
         ty = self.env.stc.get_type(formula)
@@ -1411,9 +1411,10 @@ class FXPToReal(DagWalker):
         frac_width = ty.frac_width
         res = self.mgr.Times(self.mgr.Real(-1), args[1])
         minimum = self.mgr.Real(Fraction(-2**(total_width-1), 2**frac_width))
+        maximum = self.mgr.Real(Fraction(2**(total_width-1)-1, 2**frac_width))
         return self.mgr.Ite(self.mgr.And(self.mgr.Equals(args[0], self.st_bv),
                                          self.mgr.Equals(args[1], minimum)),
-                            self.mgr.Real(Fraction(2**(total_width-1)-1, 2**frac_width)),
+                            maximum,
                             self.mgr.Ite(self.mgr.Equals(args[1], minimum),
                                          minimum,
                                          res))

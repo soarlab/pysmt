@@ -259,14 +259,15 @@ class FormulaManager(object):
                 return self.Int(val)
         return self.create_node(node_type=op.POW, args=(base, exponent))
 
-    def Div(self, left, right):
+    def Div(self, left, right, reduce_const=True):
         """ Creates an expression of the form: left / right """
-        # if right.is_constant(types.REAL):
-        #     # If right is a constant we rewrite as left * 1/right
-        #     inverse = Fraction(1) / right.constant_value()
-        #     return self.Times(left, self.Real(inverse))
-        # elif right.is_constant(types.INT):
-        #     raise NotImplementedError
+        if reduce_const:
+            if right.is_constant(types.REAL):
+                # If right is a constant we rewrite as left * 1/right
+                inverse = Fraction(1) / right.constant_value()
+                return self.Times(left, self.Real(inverse))
+            elif right.is_constant(types.INT):
+                raise NotImplementedError
 
         # This is a non-linear expression
         return self.create_node(node_type=op.DIV,
