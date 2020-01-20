@@ -88,6 +88,7 @@ UFXP_ADD, UFXP_SUB, UFXP_MUL, UFXP_DIV,     # Unsigned fixed-point arithmetic (6
 SFXP_CONSTANT,                              # Signed fixed-point constant (73)
 SFXP_LT, SFXP_LE,                           # Signed fixed-point relations (74-75)
 SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,     # Signed fixed-point arithmetic (76-79)
+SFXP_NEG,                                   # Signed fixed-point negation (80)
 ST, WP,                                     # Overflow mode constants
 RU, RD,                                     # Rounding mode constants
 REALTOINT,                                  # Real to Integer Conversion (84)
@@ -258,6 +259,7 @@ __OP_STR__ = {
     SFXP_SUB : "SFXP_SUB",
     SFXP_MUL : "SFXP_MUL",
     SFXP_DIV : "SFXP_DIV",
+    SFXP_NEG : "SFXP_NEG",
     ST : "ST",
     WP : "WP",
     RU : "RU",

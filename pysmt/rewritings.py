@@ -1129,8 +1129,8 @@ class FXPToBV(DagWalker):
                     self.mgr.BVSub(extended_res, extended_one)))
 
         # overflow handling
-        max_value = self.mgr.BV(2**total_width - 1, total_width)
-        extended_max_value = self.mgr.BV(2**total_width - 1, extended_width)
+        max_value = self.mgr.BV(2**(total_width-1) - 1, total_width)
+        extended_max_value = self.mgr.BV(2**(total_width-1) - 1, extended_width)
         min_value = self.mgr.SBV(-(2**(total_width - 1)), total_width)
         extended_min_value = self.mgr.SBV(-(2**(total_width - 1)), extended_width)
         wrapped_res = self.mgr.BVExtract(rounded_res, 0, total_width - 1)
@@ -1152,6 +1152,12 @@ class FXPToBV(DagWalker):
                         self.mgr.Equals(om, self.wp_bv),
                         wrapped_res,
                         saturated_res)))
+
+    def walk_sfxp_neg(self, formula, args, **kwargs):
+        total_width = self.env.stc.get_type(formula).total_width
+        cond = self.mgr.And(self.mgr.Equals(args[1], self.mgr.SBV(-(2**(total_width-1)), total_width)),
+                            self.mgr.Equals(args[0], self.st_bv))
+        return self.mgr.Ite(cond, self.mgr.SBV(2**(total_width-1)-1, total_width), self.mgr.BVNeg(args[1]))
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
@@ -1185,6 +1191,17 @@ class FXPToBV(DagWalker):
         right = args[1]
         return self.mgr.Equals(left, right)
 
+    def walk_and(self, formula, args, **kwargs):
+        return self.mgr.And(*args)
+
+    def walk_or(self, formula, args, **kwargs):
+        return self.mgr.Or(*args)
+
+    def walk_implies(self, formula, args, **kwargs):
+        left = args[0]
+        right = args[1]
+        return self.mgr.Implies(left, right)
+
     def walk_ite(self, formula, args, **kwargs):
         return formula
 
@@ -1211,6 +1228,14 @@ class FXPToBV(DagWalker):
 
     def walk_sfxp_le(self, formula, args, **kwargs):
         return self.mgr.BVSLE(args[0], args[1])
+    
+    def walk_bool_constant(self, formula, args, **kwargs):
+        return formula
+
+    def walk_iff(self, formula, args, **kwargs):
+        left = args[0]
+        right = args[1]
+        return self.mgr.Iff(left, right)
 
 class FXPToReal(DagWalker):
 

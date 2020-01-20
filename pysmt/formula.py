@@ -1163,7 +1163,7 @@ class FormulaManager(object):
                                 args=(om, rm, left, right))
 
     def SFXPNeg(self, om, arg):
-        """Returns the division of two signed fixed-points."""
+        """Returns the negation of two signed fixed-points."""
         return self.create_node(node_type=op.SFXP_NEG,
                                 args=(om, arg,))
 
