@@ -91,8 +91,7 @@ SFXP_ADD, SFXP_SUB, SFXP_MUL, SFXP_DIV,     # Signed fixed-point arithmetic (76-
 SFXP_NEG,                                   # Signed fixed-point negation (80)
 ST, WP,                                     # Overflow mode constants
 RU, RD,                                     # Rounding mode constants
-REALTOINT,                                  # Real to Integer Conversion (84)
-SFXP_NEG,
+REALTOINT,                                  # Real to Integer Conversion (85)
 ) = ALL_TYPES
 
 QUANTIFIERS = frozenset([FORALL, EXISTS])
@@ -265,5 +264,4 @@ __OP_STR__ = {
     RU : "RU",
     RD : "RD",
     REALTOINT : "REALTOINT",
-    SFXP_NEG : "SFXP_NEG",
 }
