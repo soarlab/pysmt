@@ -1228,7 +1228,7 @@ class FXPToBV(DagWalker):
 
     def walk_sfxp_le(self, formula, args, **kwargs):
         return self.mgr.BVSLE(args[0], args[1])
-    
+
     def walk_bool_constant(self, formula, args, **kwargs):
         return formula
 
@@ -1244,10 +1244,10 @@ class FXPToReal(DagWalker):
 
         self.mgr = self.env.formula_manager
         self.symbol_map = dict()
-        self.st_bv = self.mgr.Real(0)
-        self.wp_bv = self.mgr.Real(1)
-        self.ru_bv = self.mgr.Real(0)
-        self.rd_bv = self.mgr.Real(1)
+        self.st_real = self.mgr.Real(0)
+        self.wp_real = self.mgr.Real(1)
+        self.ru_real = self.mgr.Real(0)
+        self.rd_real = self.mgr.Real(1)
 
     #def convert(self, formula):
     #    return self.walk(formula)
@@ -1285,7 +1285,7 @@ class FXPToReal(DagWalker):
                 max_value, 
 		        self.mgr.Ite(self.mgr.LT(realval, min_value), min_value, realval)
                 )
-        return self.mgr.Ite(self.mgr.Equals(om, self.wp_bv),
+        return self.mgr.Ite(self.mgr.Equals(om, self.wp_real),
                 wrapped_res,
                 saturated_res)
     
@@ -1296,7 +1296,7 @@ class FXPToReal(DagWalker):
         frac = self.mgr.Minus(result, self.mgr.Times(realval,base)) 
         result = self.mgr.Ite(
                 self.mgr.And(
-                    self.mgr.Equals(rm, self.ru_bv),
+                    self.mgr.Equals(rm, self.ru_real),
                     self.mgr.Not(
                         self.mgr.Equals(
                             frac,
@@ -1412,7 +1412,7 @@ class FXPToReal(DagWalker):
         res = self.mgr.Times(self.mgr.Real(-1), args[1])
         minimum = self.mgr.Real(Fraction(-2**(total_width-1), 2**frac_width))
         maximum = self.mgr.Real(Fraction(2**(total_width-1)-1, 2**frac_width))
-        return self.mgr.Ite(self.mgr.And(self.mgr.Equals(args[0], self.st_bv),
+        return self.mgr.Ite(self.mgr.And(self.mgr.Equals(args[0], self.st_real),
                                          self.mgr.Equals(args[1], minimum)),
                             maximum,
                             self.mgr.Ite(self.mgr.Equals(args[1], minimum),
@@ -1435,16 +1435,16 @@ class FXPToReal(DagWalker):
             return formula
 
     def walk_st(self, formula, **kwargs):
-        return self.st_bv
+        return self.st_real
 
     def walk_wp(self, formula, **kwargs):
-        return self.wp_bv
+        return self.wp_real
 
     def walk_ru(self, formula, **kwargs):
-        return self.ru_bv
+        return self.ru_real
 
     def walk_rd(self, formula, **kwargs):
-        return self.rd_bv
+        return self.rd_real
 
     def walk_equals(self, formula, args, **kwargs):
         left = args[0]
