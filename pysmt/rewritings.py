@@ -23,6 +23,7 @@ from itertools import combinations
 from pysmt.walkers import DagWalker, IdentityDagWalker, handles
 import pysmt.typing as types
 import pysmt.operators as op
+from pysmt.constants import Fraction
 
 
 class CNFizer(DagWalker):
@@ -1236,9 +1237,285 @@ class FXPToBV(DagWalker):
         right = args[1]
         return self.mgr.Iff(left, right)
 
+class FXPToReal(DagWalker):
+
+    def __init__(self, environment=None):
+        DagWalker.__init__(self, environment)
+
+        self.mgr = self.env.formula_manager
+        self.symbol_map = dict()
+        self.st_real = self.mgr.Real(0)
+        self.wp_real = self.mgr.Real(1)
+        self.ru_real = self.mgr.Real(0)
+        self.rd_real = self.mgr.Real(1)
+
+    #def convert(self, formula):
+    #    return self.walk(formula)
+
+    def walk_and(self, formula, args, **kwargs):
+        return self.mgr.And(*args)
+
+    def walk_or(self, formula, args, **kwargs):
+        return self.mgr.Or(*args)
+
+    def walk_implies(self, formula, args, **kwargs):
+        return self.mgr.Implies(args[0], args[1])
+
+    def process_real_noround(self,realval,om,sign,total_width,frac_width):
+        if sign==0:
+            max_value = self.mgr.Real(Fraction(2**total_width - 1, 2**frac_width))
+            min_value = self.mgr.Real(0)
+        else:
+            max_value = self.mgr.Real(Fraction(2**(total_width - 1)-1, 2**frac_width))
+            min_value = self.mgr.Real(Fraction(-2**(total_width - 1), 2**frac_width))
+
+        modulo=self.mgr.Real(2**(total_width-frac_width))
+        flodiv=self.mgr.RealToInt(self.mgr.Div(realval,modulo,reduce_const=False))
+        divres=self.mgr.ToReal(flodiv)
+        remain=self.mgr.Minus(realval,self.mgr.Times(modulo,divres))
+        if sign==1:
+            remain=self.mgr.Ite(
+                self.mgr.LE(remain, max_value),
+                remain, 
+		        self.mgr.Minus(remain,modulo)
+                )
+        wrapped_res = remain
+        saturated_res = self.mgr.Ite(
+                self.mgr.GT(realval, max_value),
+                max_value, 
+		        self.mgr.Ite(self.mgr.LT(realval, min_value), min_value, realval)
+                )
+        return self.mgr.Ite(self.mgr.Equals(om, self.wp_real),
+                wrapped_res,
+                saturated_res)
+    
+    def round_real(self,realval,rm,frac_width):
+        base=self.mgr.Real(2**frac_width)
+        flo=self.mgr.RealToInt(self.mgr.Times(realval,base))
+        result = self.mgr.ToReal(flo)
+        frac = self.mgr.Minus(result, self.mgr.Times(realval,base)) 
+        result = self.mgr.Ite(
+                self.mgr.And(
+                    self.mgr.Equals(rm, self.ru_real),
+                    self.mgr.Not(
+                        self.mgr.Equals(
+                            frac,
+                            self.mgr.Real(0)))),
+                self.mgr.Plus(result,self.mgr.Real(1)),
+                result)
+        result = self.mgr.Div(result,base)
+        return result
+
+    def process_real_round(self,realval,om,rm,sign,total_width,frac_width):
+        tempres = self.round_real(realval,rm,frac_width)
+        result = self.process_real_noround(tempres,om,sign,total_width,frac_width)
+        return result
+
+
+
+    def walk_ufxp_add(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        left = args[1]
+        right = args[2]
+        result = self.mgr.Plus(left,right)
+        return self.process_real_noround(result,om,0,total_width,frac_width)
+
+    
+
+    def walk_sfxp_add(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        left = args[1]
+        right = args[2]
+        result = self.mgr.Plus(left,right)
+        return self.process_real_noround(result,om,1,total_width,frac_width)
+        
+
+
+    def walk_ufxp_sub(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        left = args[1]
+        right = args[2]
+        result = self.mgr.Minus(left,right)
+        return self.process_real_noround(result,om,0,total_width,frac_width)
+        
+
+    def walk_sfxp_sub(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        left = args[1]
+        right = args[2]
+        result = self.mgr.Minus(left,right)
+        return self.process_real_noround(result,om,1,total_width,frac_width)
+
+    def walk_ufxp_mul(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        rm = args[1]
+        left = args[2]
+        right = args[3]
+        result = self.mgr.Times(left,right)
+        return self.process_real_round(result,om,rm,0,total_width,frac_width)
+
+    def walk_sfxp_mul(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        rm = args[1]
+        left = args[2]
+        right = args[3]
+        result = self.mgr.Times(left,right)
+        return self.process_real_round(result,om,rm,1,total_width,frac_width)
+
+    def walk_ufxp_div(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        rm = args[1]
+        left = args[2]
+        right = args[3]
+        return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
+                            self.mgr.Real(Fraction(2**total_width-1, 2**frac_width)),
+                            self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,0,total_width,frac_width))
+
+
+    def walk_sfxp_div(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        om = args[0]
+        rm = args[1]
+        left = args[2]
+        right = args[3]
+        return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
+                            self.mgr.Real(Fraction(-1, 2**frac_width)),
+                            self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,1,total_width,frac_width))
+
+    def walk_sfxp_neg(self, formula, args, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = ty.frac_width
+        res = self.mgr.Times(self.mgr.Real(-1), args[1])
+        minimum = self.mgr.Real(Fraction(-2**(total_width-1), 2**frac_width))
+        maximum = self.mgr.Real(Fraction(2**(total_width-1)-1, 2**frac_width))
+        return self.mgr.Ite(self.mgr.And(self.mgr.Equals(args[0], self.st_real),
+                                         self.mgr.Equals(args[1], minimum)),
+                            maximum,
+                            self.mgr.Ite(self.mgr.Equals(args[1], minimum),
+                                         minimum,
+                                         res))
+
+    def walk_symbol(self, formula, **kwargs):
+        ty = self.env.stc.get_type(formula)
+        if ty.is_fxp_type():
+            if formula not in self.symbol_map:
+                self.symbol_map[formula] = \
+                    self.mgr.FreshSymbol(types.REAL)
+                return self.symbol_map[formula]
+        elif ty.is_fxp_om_type() or ty.is_fxp_rm_type():
+            if formula not in self.symbol_map:
+                self.symbol_map[formula] = \
+                    self.mgr.FreshSymbol(types.BVType(1))
+                return self.symbol_map[formula]
+        else:
+            return formula
+
+    def walk_st(self, formula, **kwargs):
+        return self.st_real
+
+    def walk_wp(self, formula, **kwargs):
+        return self.wp_real
+
+    def walk_ru(self, formula, **kwargs):
+        return self.ru_real
+
+    def walk_rd(self, formula, **kwargs):
+        return self.rd_real
+
+    def walk_equals(self, formula, args, **kwargs):
+        left = args[0]
+        right = args[1]
+        return self.mgr.Equals(left, right)
+
+    def walk_ite(self, formula, args, **kwargs):
+        return formula
+
+    def walk_not(self, formula, args, **kwargs):
+        return self.mgr.Not(args[0])
+
+    def walk_bv_constant(self, formula, args, **kwargs):
+        return formula
+
+    def convert(self, formula):
+        return self.walk(formula)
+
+    def walk_ufxp_constant(self, formula, args, **kwargs):
+        bv = args[0]
+        bv_val = bv._content.payload[0]
+        frac_width = formula._content.payload[0]
+        return self.mgr.Real(Fraction(bv_val, 2**frac_width))
+
+    def walk_sfxp_constant(self, formula, args, **kwargs):
+        bv = args[0]
+        bv_val = bv._content.payload[0]
+        ty = self.env.stc.get_type(formula)
+        total_width = ty.total_width
+        frac_width = formula._content.payload[0]
+        if bv_val>2**(total_width-1)-1:
+            bv_val=bv_val-2**total_width
+        return self.mgr.Real(Fraction(bv_val, 2**frac_width))
+
+
+    def walk_ufxp_lt(self, formula, args, **kwargs):
+        return self.mgr.LT(args[0], args[1])
+
+    def walk_ufxp_le(self, formula, args, **kwargs):
+        return self.mgr.LE(args[0], args[1])
+
+    def walk_sfxp_gt(self, formula, args, **kwargs):
+        return self.mgr.GT(args[0], args[1])
+
+    def walk_sfxp_ge(self, formula, args, **kwargs):
+        return self.mgr.GE(args[0], args[1])
+
+    def walk_sfxp_lt(self, formula, args, **kwargs):
+        return self.mgr.LT(args[0], args[1])
+
+    def walk_sfxp_le(self, formula, args, **kwargs):
+        return self.mgr.LE(args[0], args[1])
+
+    def walk_ufxp_gt(self, formula, args, **kwargs):
+        return self.mgr.GT(args[0], args[1])
+
+    def walk_ufxp_ge(self, formula, args, **kwargs):
+        return self.mgr.GE(args[0], args[1])
+
+    def walk_bool_constant(self, formula, args, *kwargs):
+        return formula
+
+    def walk_iff(self, formula, args, *kwargs):
+        return self.mgr.Iff(args[0], args[1])
+
 def get_fp_bv_converter(environment=None):
     fp_bv_converter = FXPToBV(environment)
     return fp_bv_converter
+
+def get_fp_real_converter(environment=None):
+    return FXPToReal(environment)
 
 def nnf(formula, environment=None):
     """Converts the given formula in NNF"""
