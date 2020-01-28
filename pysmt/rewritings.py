@@ -1144,7 +1144,7 @@ class FXPToBV(DagWalker):
 
         return self.mgr.Ite(
                 self.mgr.Equals(divisor, zero),
-                allones,
+                self.mgr.FreshSymbol(types.BVType(ty.total_width)),
                 self.mgr.Ite(
                     self.mgr.Equals(dividend, zero),
                     zero,
