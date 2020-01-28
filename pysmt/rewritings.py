@@ -1153,12 +1153,6 @@ class FXPToBV(DagWalker):
                         wrapped_res,
                         saturated_res)))
 
-    def walk_sfxp_neg(self, formula, args, **kwargs):
-        total_width = self.env.stc.get_type(formula).total_width
-        cond = self.mgr.And(self.mgr.Equals(args[1], self.mgr.SBV(-(2**(total_width-1)), total_width)),
-                            self.mgr.Equals(args[0], self.st_bv))
-        return self.mgr.Ite(cond, self.mgr.SBV(2**(total_width-1)-1, total_width), self.mgr.BVNeg(args[1]))
-
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
         if ty.is_fxp_type():
@@ -1404,20 +1398,6 @@ class FXPToReal(DagWalker):
         return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
                             self.mgr.Real(Fraction(-1, 2**frac_width)),
                             self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,1,total_width,frac_width))
-
-    def walk_sfxp_neg(self, formula, args, **kwargs):
-        ty = self.env.stc.get_type(formula)
-        total_width = ty.total_width
-        frac_width = ty.frac_width
-        res = self.mgr.Times(self.mgr.Real(-1), args[1])
-        minimum = self.mgr.Real(Fraction(-2**(total_width-1), 2**frac_width))
-        maximum = self.mgr.Real(Fraction(2**(total_width-1)-1, 2**frac_width))
-        return self.mgr.Ite(self.mgr.And(self.mgr.Equals(args[0], self.st_real),
-                                         self.mgr.Equals(args[1], minimum)),
-                            maximum,
-                            self.mgr.Ite(self.mgr.Equals(args[1], minimum),
-                                         minimum,
-                                         res))
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)

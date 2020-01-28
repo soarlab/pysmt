@@ -1164,10 +1164,10 @@ class FormulaManager(object):
                                 args=(om, rm, left, right))
 
     def SFXPNeg(self, om, arg):
-        """Returns the negation of two signed fixed-points."""
-        return self.create_node(node_type=op.SFXP_NEG,
-                                args=(om, arg,))
-
+        """Returns the negation of a signed fixed-point number."""
+        return self.SFXPSub(om,
+                            self.SFXP(self.SBV(0, arg.fxp_total_width()), arg.fxp_frac_width()),
+                            arg)
     def ST(self):
         return self.create_node(node_type=op.ST, args=())
 
