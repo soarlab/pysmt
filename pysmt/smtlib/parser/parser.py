@@ -411,7 +411,6 @@ class SmtLibParser(object):
                             'bvsub':self._operator_adapter(mgr.BVSub),
                             'bvult':self._operator_adapter(mgr.BVULT),
                             'bvxor':self._operator_adapter(mgr.BVXor),
-                            'RNE':self._operator_adapter(mgr.RU),
                             'ufxp.add':self._operator_adapter(mgr.UFXPAdd),
                             'ufxp.sub':self._operator_adapter(mgr.UFXPSub),
                             'ufxp.mul':self._operator_adapter(mgr.UFXPMul),
@@ -429,8 +428,6 @@ class SmtLibParser(object):
                             'sfxp.leq':self._operator_adapter(mgr.SFXPLE),
                             'sfxp.gt':self._operator_adapter(mgr.SFXPGT),
                             'sfxp.geq':self._operator_adapter(mgr.SFXPGE),
-                            'ufxp':self._operator_adapter(mgr.UFXP),
-                            'sfxp':self._operator_adapter(mgr.SFXP),
                             '_':self._smtlib_underscore,
                             # Extended Functions
                             'bvnand':self._operator_adapter(mgr.BVNand),
@@ -611,6 +608,16 @@ class SmtLibParser(object):
                 raise PysmtSyntaxError("Expected number in '_ bv' expression: "
                                        "'%s'" % op, tokens.pos_info)
             fun = mgr.BV(v, width)
+        elif op[1:] == 'fxp':
+            try:
+                fb = int(self.parse_atom(tokens, "expression"))
+            except ValueError:
+                raise PysmtSyntaxError("Expected number in '_ fxp' expression: "
+                                       "'%s'" % op, tokens.pos_info)
+            if op == 'sfxp':
+                fun = lambda x: mgr.SFXP(x, fb)
+            elif op == 'ufxp':
+                fun = lambda x: mgr.UFXP(x, fb)
 
         else:
             raise PysmtSyntaxError("Unexpected '_' expression '%s'" % op,
@@ -655,8 +662,10 @@ class SmtLibParser(object):
         """
         rnd_modes = {'roundNearestTiesToEven': 'rne not implemented',
                      'roundNearestTiesToAway': 'rna not implemented',
-                     'roundTowardPositive': mgr.RU(),
-                     'roundTowardNegative': mgr.RD(),
+                     'roundTowardPositive': 'rtp not implemented',
+                     'roundTowardNegative': 'rtn not implemented',
+                     'roundDown': mgr.RD(),
+                     'roundUp': mgr.RU(),
                      'roundTowardZero': 'rtz not implemented',}
         res = self.cache.get(token)
         if res is None:
@@ -680,8 +689,8 @@ class SmtLibParser(object):
                 val = token[1:-1]
                 val = val.replace('""', '"')
                 res = mgr.String(val)
-            elif token in ('Saturated', 'Wrapping'):
-                res = mgr.ST() if token == 'Saturated' else mgr.WP()
+            elif token in ('saturation', 'wrapAround'):
+                res = mgr.ST() if token == 'saturation' else mgr.WP()
             elif token in rnd_modes.keys():
                 res = rnd_modes[token]
             else:
