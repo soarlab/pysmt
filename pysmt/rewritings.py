@@ -1072,7 +1072,7 @@ class FXPToBV(DagWalker):
 
         return self.mgr.Ite(
                 self.mgr.Equals(divisor, zero),
-                allones,
+                self.mgr.FreshSymbol(types.BVType(total_width)),
                 self.mgr.Ite(
                     self.mgr.Equals(om, self.wp_bv),
                     wrapped_res,
@@ -1144,7 +1144,7 @@ class FXPToBV(DagWalker):
 
         return self.mgr.Ite(
                 self.mgr.Equals(divisor, zero),
-                allones,
+                self.mgr.FreshSymbol(types.BVType(total_width)),
                 self.mgr.Ite(
                     self.mgr.Equals(dividend, zero),
                     zero,
@@ -1383,7 +1383,7 @@ class FXPToReal(DagWalker):
         left = args[2]
         right = args[3]
         return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
-                            self.mgr.Real(Fraction(2**total_width-1, 2**frac_width)),
+                            self.mgr.FreshSymbol(types.REAL),
                             self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,0,total_width,frac_width))
 
 
@@ -1396,7 +1396,7 @@ class FXPToReal(DagWalker):
         left = args[2]
         right = args[3]
         return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
-                            self.mgr.Real(Fraction(-1, 2**frac_width)),
+                            self.mgr.FreshSymbol(types.REAL),
                             self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,1,total_width,frac_width))
 
     def walk_symbol(self, formula, **kwargs):
@@ -1409,7 +1409,7 @@ class FXPToReal(DagWalker):
         elif ty.is_fxp_om_type() or ty.is_fxp_rm_type():
             if formula not in self.symbol_map:
                 self.symbol_map[formula] = \
-                    self.mgr.FreshSymbol(types.BVType(1))
+                    self.mgr.FreshSymbol(types.REAL)
                 return self.symbol_map[formula]
         else:
             return formula
