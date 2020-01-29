@@ -259,14 +259,15 @@ class FormulaManager(object):
                 return self.Int(val)
         return self.create_node(node_type=op.POW, args=(base, exponent))
 
-    def Div(self, left, right):
+    def Div(self, left, right, reduce_const=True):
         """ Creates an expression of the form: left / right """
-        if right.is_constant(types.REAL):
-            # If right is a constant we rewrite as left * 1/right
-            inverse = Fraction(1) / right.constant_value()
-            return self.Times(left, self.Real(inverse))
-        elif right.is_constant(types.INT):
-            raise NotImplementedError
+        if reduce_const:
+            if right.is_constant(types.REAL):
+                # If right is a constant we rewrite as left * 1/right
+                inverse = Fraction(1) / right.constant_value()
+                return self.Times(left, self.Real(inverse))
+            elif right.is_constant(types.INT):
+                raise NotImplementedError
 
         # This is a non-linear expression
         return self.create_node(node_type=op.DIV,
@@ -478,6 +479,25 @@ class FormulaManager(object):
         else:
             raise PysmtTypeError("Argument is of type %s, but INT was "
                                  "expected!\n" % t)
+
+    def RealToInt(self, formula):
+        """ Cast a real formula to the int
+            that is no more than the real. """
+        return self.create_node(node_type=op.REALTOINT,
+                                args=(formula,))
+
+    def Ceiling(self, formula):
+        """ Cast a real formula to the int
+            that is at least as large as the real. """
+        int_val = self.RealToInt(formula)
+        cond = self.Equals(self.ToReal(int_val), formula)
+        return self.Ite(cond, int_val, self.Plus(int_val, self.Int(1)))
+
+
+    def Truncate(self, formula):
+        """ Truncate a real formula to int. """
+        cond = self.GE(formula, self.Real(0))
+        return self.Ite(cond, self.RealToInt(formula), self.Ceiling(formula))
 
     def AtMostOne(self, *args):
         """ At most one of the bool expressions can be true at anytime.
@@ -1050,7 +1070,7 @@ class FormulaManager(object):
     def UFXP(self, bv, fb):
         if type(fb) is FNode and (fb.node_type() is op.INT_CONSTANT or
                                   fb.node_type() is op.REAL_CONSTANT):
-                fb = int(fb._content.payload)
+            fb = int(fb._content.payload)
         return self.create_node(node_type=op.UFXP_CONSTANT,
                                 args=(bv,),
                                 payload=(fb,))
@@ -1144,9 +1164,10 @@ class FormulaManager(object):
                                 args=(om, rm, left, right))
 
     def SFXPNeg(self, om, arg):
-        return self.create_node(node_type=op.SFXP_NEG,
-                                args=(om, arg,))
-
+        """Returns the negation of a signed fixed-point number."""
+        return self.SFXPSub(om,
+                            self.SFXP(self.SBV(0, arg.fxp_total_width()), arg.fxp_frac_width()),
+                            arg)
     def ST(self):
         return self.create_node(node_type=op.ST, args=())
 
