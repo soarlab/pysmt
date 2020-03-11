@@ -1,3 +1,13 @@
+=================================================
+Fork of pySMT which implements support for QF_FXP
+=================================================
+Two translators are available in pysmt/rewritings.py:
+- A fixed-point to real converter (https://github.com/soarlab/pysmt/blob/0a6a72a9bdd164f11d0aec7f3dc418667897a28d/pysmt/rewritings.py#L1249-L1502)
+- A fixed-point to bitvector converter (https://github.com/soarlab/pysmt/blob/0a6a72a9bdd164f11d0aec7f3dc418667897a28d/pysmt/rewritings.py#L825-L1247)
+
+An example script is also provided (https://github.com/soarlab/pysmt/blob/fixed-points/fxp2smt.py) which converts a QF_FXP smt2 query file to a QF_UFBV or QF_NIRA smt2 query, depending on whether the `BV` variable is set to True or False respectively.
+
+
 ===========================
 pySMT: a Python API for SMT
 ===========================
