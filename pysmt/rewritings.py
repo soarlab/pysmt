@@ -824,6 +824,7 @@ class DisjointSet(object):
 
 class FXPToBV(DagWalker):
 
+
     def __init__(self, environment=None):
         DagWalker.__init__(self, environment)
 
@@ -833,6 +834,15 @@ class FXPToBV(DagWalker):
         self.wp_bv = self.mgr.BV(1, 1)
         self.ru_bv = self.mgr.BV(0, 1)
         self.rd_bv = self.mgr.BV(1, 1)
+        self.divz_res = dict()
+
+    def _get_divz_res(self, sgn, tb, fb):
+        key = (sgn, tb, fb)
+        if key not in self.divz_res.keys():
+            ftype = types.FunctionType(types.BVType(tb), [types.BVType(1), types.BVType(1), types.BVType(tb)])
+            func = self.mgr.FreshSymbol(ftype)
+            self.divz_res[key] = func
+        return self.divz_res[key]
 
     def convert(self, formula):
         return self.walk(formula)
@@ -1070,9 +1080,10 @@ class FXPToBV(DagWalker):
                 max_value,
                 wrapped_res)
 
+        divz_res = self._get_divz_res(False, total_width, frac_width)
         return self.mgr.Ite(
                 self.mgr.Equals(divisor, zero),
-                self.mgr.FreshSymbol(types.BVType(total_width)),
+                divz_res(om, rm, dividend),
                 self.mgr.Ite(
                     self.mgr.Equals(om, self.wp_bv),
                     wrapped_res,
@@ -1141,10 +1152,11 @@ class FXPToBV(DagWalker):
                     self.mgr.BVSLT(extended_res, extended_min_value),
                     min_value,
                     wrapped_res))
-
+        divz_res = self._get_divz_res(True, total_width, frac_width)
         return self.mgr.Ite(
                 self.mgr.Equals(divisor, zero),
-                self.mgr.FreshSymbol(types.BVType(total_width)),
+                # Uninterpreted result on division by zero
+                divz_res(om, rm, dividend),
                 self.mgr.Ite(
                     self.mgr.Equals(dividend, zero),
                     zero,
@@ -1190,6 +1202,9 @@ class FXPToBV(DagWalker):
 
     def walk_or(self, formula, args, **kwargs):
         return self.mgr.Or(*args)
+
+    def walk_function(self, formula, **kwargs):
+        return formula
 
     def walk_implies(self, formula, args, **kwargs):
         left = args[0]
