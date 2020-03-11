@@ -36,7 +36,7 @@ else:
 F = conv.convert(f)
 
 if BV:
-    print("(set-logic QF_BV)")
+    print("(set-logic QF_UFBV)")
 else:
     print("(set-logic QF_NIRA)")
 
