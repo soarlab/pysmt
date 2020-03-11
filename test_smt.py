@@ -41,7 +41,7 @@ else:
     print("(set-logic QF_NIRA)")
 
 for x in F.get_free_variables():
-    print("(declare-fun {} () {})".format(x.to_smtlib(), x._content.payload[1].as_smtlib(funstyle=False)))
+    print("(declare-fun {} {})".format(x.to_smtlib(), x._content.payload[1].as_smtlib(funstyle=True)))
 print("(assert {})".format(F.to_smtlib()))
 print("(check-sat)")
 
