@@ -1451,8 +1451,29 @@ class FXPToReal(DagWalker):
     def walk_bv_constant(self, formula, args, **kwargs):
         return formula
 
+
     def convert(self, formula):
-        return self.walk(formula)
+        f = self.walk(formula)
+        for s, fv in self.symbol_map.items():
+            ty = self.env.stc.get_type(s)
+            if ty.is_fxp_type():
+                total_width = ty.total_width
+                frac_width = ty.frac_width
+                sign = ty.sign
+                if sign:
+                    max_value = self.mgr.Real(Fraction(2**(total_width - 1)-1, 2**frac_width))
+                    min_value = self.mgr.Real(Fraction(-2**(total_width - 1), 2**frac_width))
+                else:
+                    max_value = self.mgr.Real(Fraction(2**total_width - 1, 2**frac_width))
+                    min_value = self.mgr.Real(0)
+                int_val = self.mgr.Times(fv, self.mgr.Real(2**frac_width))
+                f = self.mgr.And(f,
+                                 self.mgr.Equals(
+                                     self.mgr.ToReal(self.mgr.RealToInt(int_val)),
+                                     int_val),
+                                 self.mgr.GE(fv, min_value),
+                                 self.mgr.LE(fv, max_value))
+        return f
 
     def walk_ufxp_constant(self, formula, args, **kwargs):
         bv = args[0]
