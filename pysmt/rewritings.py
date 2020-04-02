@@ -1397,9 +1397,7 @@ class FXPToReal(DagWalker):
         rm = args[1]
         left = args[2]
         right = args[3]
-        return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
-                            self.mgr.FreshSymbol(types.REAL),
-                            self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,0,total_width,frac_width))
+        return self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,0,total_width,frac_width)
 
 
     def walk_sfxp_div(self, formula, args, **kwargs):
@@ -1410,9 +1408,7 @@ class FXPToReal(DagWalker):
         rm = args[1]
         left = args[2]
         right = args[3]
-        return self.mgr.Ite(self.mgr.Equals(right, self.mgr.Real(Fraction(0))),
-                            self.mgr.FreshSymbol(types.REAL),
-                            self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,1,total_width,frac_width))
+        return self.process_real_round(self.mgr.Div(left,right,reduce_const=False),om,rm,1,total_width,frac_width)
 
     def walk_symbol(self, formula, **kwargs):
         ty = self.env.stc.get_type(formula)
