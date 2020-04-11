@@ -1037,6 +1037,8 @@ class SmtLibParser(object):
             res = self.env.type_manager.REAL()
         elif var == "RoundingMode":
             res = self.env.type_manager.FXPRMType()
+        elif var == "OverflowMode":
+            res = self.env.type_manager.FXPOMType()
         elif var == "String":
             res = self.env.type_manager.STRING()
         else:
