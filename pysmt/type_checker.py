@@ -323,6 +323,27 @@ class SimpleTypeChecker(walkers.DagWalker):
     def walk_identity_sfxp(self, formula, args, **kwargs):
         return self.check_fxp_const(True, formula, args, **kwargs)
 
+    @walkers.handles(op.TO_SFXP)
+    def walk_to_sfxp(self, formula, args, **kwargs):
+        if (args[0] != FXP_OM or
+            args[1] != FXP_RM or
+            (args[2] != REAL and
+             not args[2].is_sfxp_type())):
+            return None
+        return SFXPType(formula._content.payload[0],
+                        formula._content.payload[1])
+
+    @walkers.handles(op.TO_UFXP)
+    def walk_to_ufxp(self, formula, args, **kwargs):
+        if (args[0] != FXP_OM or
+            args[1] != FXP_RM or
+            (args[2] != REAL and
+             not args[2].is_ufxp_type())):
+            return None
+        return UFXPType(formula._content.payload[0],
+                        formula._content.payload[1])
+        
+
     def walk_symbol(self, formula, args, **kwargs):
         assert formula is not None
         assert len(args) == 0

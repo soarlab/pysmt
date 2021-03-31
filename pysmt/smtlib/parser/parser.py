@@ -618,6 +618,17 @@ class SmtLibParser(object):
                 fun = lambda x: mgr.SFXP(x, fb)
             elif op == 'ufxp':
                 fun = lambda x: mgr.UFXP(x, fb)
+        elif op.startswith('to_') and op.endswith('fxp'):
+            try:
+                tb = int(self.parse_atom(tokens, "expression"))
+                fb = int(self.parse_atom(tokens, "expression"))
+            except ValueError:
+                raise PysmtSyntaxError("Expected number in '_ to_fxp' expression: "
+                                       "'%s'" % op, tokens.pos_info)
+            if op == 'to_sfxp':
+                fun = lambda om, rm, src: mgr.TOSFXP(om, rm, src, tb, fb)
+            elif op == 'to_ufxp':
+                fun = lambda om, rm, src: mgr.TOUFXP(om, rm, src, tb, fb)
 
         else:
             raise PysmtSyntaxError("Unexpected '_' expression '%s'" % op,
