@@ -1083,6 +1083,28 @@ class FormulaManager(object):
                                 args=(bv,),
                                 payload=(fb,))
 
+    def TOSFXP(self, om, rm, src, tb, fb):
+        if type(fb) is FNode and (fb.node_type() is op.INT_CONSTANT or
+                                  fb.node_type() is op.REAL_CONSTANT):
+                fb = int(fb._content.payload)
+        if type(tb) is FNode and (tb.node_type() is op.INT_CONSTANT or
+                                  tb.node_type() is op.REAL_CONSTANT):
+                tb = int(tb._content.payload)
+        return self.create_node(node_type=op.TO_SFXP,
+                                args=(om, rm, src),
+                                payload=(tb, fb))
+
+    def TOUFXP(self, om, rm, src, tb, fb):
+        if type(fb) is FNode and (fb.node_type() is op.INT_CONSTANT or
+                                  fb.node_type() is op.REAL_CONSTANT):
+                fb = int(fb._content.payload)
+        if type(tb) is FNode and (tb.node_type() is op.INT_CONSTANT or
+                                  tb.node_type() is op.REAL_CONSTANT):
+                tb = int(tb._content.payload)
+        return self.create_node(node_type=op.TO_UFXP,
+                                args=(om, rm, src),
+                                payload=(tb, fb))
+
     def UFXPLT(self, left, right):
         """Returns the formula left < right."""
         return self.create_node(node_type=op.UFXP_LT,

@@ -1226,6 +1226,17 @@ class FXPToBV(DagWalker):
     def walk_sfxp_constant(self, formula, args, **kwargs):
         return formula.arg(0)
 
+    def walk_to_sfxp(self, formula, args, **kwargs):
+        if args[2].get_type().is_real_type():
+            raise NotImplementedError("FXP-BV translation of reals not currently supported")
+
+    def walk_to_ufxp(self, formula, args, **kwargs):
+        if args[2].get_type().is_real_type():
+            raise NotImplementedError("FXP-BV translation of reals not currently supported")
+
+    def walk_real_constant(self, formula, args, **kwargs):
+        raise NotImplementedError("FXP-BV translation of reals not currently supported")
+
     def walk_ufxp_lt(self, formula, args, **kwargs):
         return self.mgr.BVULT(args[0], args[1])
 
@@ -1491,6 +1502,21 @@ class FXPToReal(DagWalker):
             bv_val=bv_val-2**total_width
         return self.mgr.Real(Fraction(bv_val, 2**frac_width))
 
+    def walk_real_constant(self, formula, args, **kwargs):
+        return formula
+
+    def walk_to_sfxp(self, formula, args, **kwargs):
+        # The source is already real
+        return self.process_real_round(args[2], args[0], args[1], 1,
+                                       formula._content.payload[0],
+                                       formula._content.payload[1])
+    
+    def walk_to_ufxp(self, formula, args, **kwargs):
+        # The source is already real
+        return self.process_real_round(args[2], args[0], args[1], 0,
+                                       formula._content.payload[0],
+                                       formula._content.payload[1])
+    
 
     def walk_ufxp_lt(self, formula, args, **kwargs):
         return self.mgr.LT(args[0], args[1])
@@ -1522,7 +1548,7 @@ class FXPToReal(DagWalker):
     def walk_iff(self, formula, args, *kwargs):
         return self.mgr.Iff(args[0], args[1])
 
-def get_fp_bv_converter(environment=None):
+def get_fp_bv_converter(environment=None):  
     fp_bv_converter = FXPToBV(environment)
     return fp_bv_converter
 
