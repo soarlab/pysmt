@@ -42,6 +42,9 @@ else:
 
 for x in F.get_free_variables():
     print("(declare-fun {} {})".format(x.to_smtlib(), x._content.payload[1].as_smtlib(funstyle=True)))
+
+for old_n, new_n in conv.symbol_map.items():
+    print("(define-fun {} {} {})".format(old_n.to_smtlib(), new_n.get_type().as_smtlib(), new_n.to_smtlib()))
 print("(assert {})".format(F.to_smtlib()))
 print("(check-sat)")
 
