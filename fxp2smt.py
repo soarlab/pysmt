@@ -40,8 +40,18 @@ if BV:
 else:
     print("(set-logic QF_NIRA)")
 
+sm = conv.symbol_map
+inv_sm = {v:k for k, v in sm.items()}
+
+for old_n, new_n in conv.symbol_map.items():
+    print("(declare-fun {} {})".format(old_n.to_smtlib(), new_n._content.payload[1].as_smtlib(funstyle=True)))
+
 for x in F.get_free_variables():
-    print("(declare-fun {} {})".format(x.to_smtlib(), x._content.payload[1].as_smtlib(funstyle=True)))
+    if x in inv_sm.keys():
+        old_n = inv_sm[x]
+        print("(define-fun {} {} {})".format(x.to_smtlib(), old_n.get_type().as_smtlib(), old_n.to_smtlib()))
+    else:
+        print("(declare-fun {} {})".format(x.to_smtlib(), x._content.payload[1].as_smtlib(funstyle=True)))
 print("(assert {})".format(F.to_smtlib()))
 print("(check-sat)")
 
