@@ -49,7 +49,7 @@ for old_n, new_n in conv.symbol_map.items():
 for x in F.get_free_variables():
     if x in inv_sm.keys():
         old_n = inv_sm[x]
-        print("(define-fun {} {} {})".format(x.to_smtlib(), old_n.get_type().as_smtlib(), old_n.to_smtlib()))
+        print("(define-fun {} {} {})".format(x.to_smtlib(), x.get_type().as_smtlib(), old_n.to_smtlib()))
     else:
         print("(declare-fun {} {})".format(x.to_smtlib(), x._content.payload[1].as_smtlib(funstyle=True)))
 print("(assert {})".format(F.to_smtlib()))
