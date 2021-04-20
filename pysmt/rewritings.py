@@ -1231,9 +1231,42 @@ class FXPToBV(DagWalker):
             raise NotImplementedError("FXP-BV translation of reals not currently supported")
 
     def walk_to_ufxp(self, formula, args, **kwargs):
-        if args[2].get_type().is_real_type():
-            raise NotImplementedError("FXP-BV translation of reals not currently supported")
+        tb_s = formula._content.payload[2]
+        fb_s = formula._content.payload[3]
+        tb_d = formula._content.payload[0]
+        fb_d = formula._content.payload[1]
+        # Compute the bits in the whole number portion
+        wb_s = tb_s-fb_s
+        wb_d = tb_d-fb_d
+        max_value_d = self.mgr.BV(2**tb_d - 1, tb_d)
 
+        # If the fractional and whole bits of the source will fit inside the
+        # destination type, then simply copy them.
+        if wb_d >= wb_s and fb_d >= fb_s:
+            return self.mgr.BVConcat(
+                self.mgr.BVZExt(args[2], wb_d-wb_s),
+                self.mgr.BVZero(fb_d-fb_s))
+
+        # If the fractional bits in the source will fit in the destination
+        # and the whole bits in the source exceeds the destination, we copy
+        # the fractional bits, but overflow correct the result.
+        elif fb_d >= fb_s and wb_d < wb_s:
+            part = self.mgr.BVConcat(args[2],
+                                     self.mgr.BVZero(fb_d-fb_s))
+            print(part.get_type())
+            
+            wrap_res = self.mgr.BVExtract(part, wb_s-wb_d)
+            sat_res = self.mgr.Ite(self.mgr.BVULT(self.mgr.BVZExt(max_value_d, tb_s-tb_d),
+                                                  part),
+                                   max_value_d,
+                                   wrap_res)
+            return self.mgr.Ite(
+                self.mgr.Equals(args[0], self.wp_bv),
+                wrap_res,
+                sat_res)
+        else:
+            return None
+        
     def walk_real_constant(self, formula, args, **kwargs):
         raise NotImplementedError("FXP-BV translation of reals not currently supported")
 
